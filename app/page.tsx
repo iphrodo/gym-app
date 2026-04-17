@@ -5,7 +5,8 @@ import { TrainingCycle, WorkoutSession, DayTemplate } from '../types';
 import HomeView from '../components/HomeView';
 import CycleView from '../components/CycleView';
 import WorkoutView from '../components/WorkoutView';
-import NewCycleView from '../components/NewCycleView';
+import CycleFormView from '../components/CycleFormView';
+import StatsView from '../components/StatsView';
 
 const DEFAULT_CYCLE: TrainingCycle = {
   id: "cycle-2024-v1",
@@ -34,7 +35,7 @@ const DEFAULT_CYCLE: TrainingCycle = {
 
 export default function GymApp() {
   const [isLoaded, setIsLoaded] = useState(false);
-  const [view, setView] = useState<'home' | 'cycle' | 'new_cycle' | 'workout'>('home');
+  const [view, setView] = useState<'home' | 'cycle' | 'new_cycle' | 'edit_cycle' | 'workout' | 'stats'>('home');
   const [history, setHistory] = useState<WorkoutSession[]>([]);
   const [cycles, setCycles] = useState<TrainingCycle[]>([]);
   const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
@@ -82,6 +83,11 @@ export default function GymApp() {
     setView('workout');
   };
 
+  const prepareEditWorkout = (session: WorkoutSession) => {
+    setActiveSession(session);
+    setView('workout');
+  };
+
   const updateWeight = (exerciseName: string, weight: string) => {
     if (!activeSession) return;
     const updatedData = activeSession.data.map(item => 
@@ -97,15 +103,30 @@ export default function GymApp() {
 
   const saveWorkout = () => {
     if (!activeSession) return;
-    setHistory([...history, activeSession]);
+    const existingIndex = history.findIndex(h => h.id === activeSession.id);
+    if (existingIndex >= 0) {
+      const newHistory = [...history];
+      newHistory[existingIndex] = activeSession;
+      setHistory(newHistory);
+    } else {
+      setHistory([...history, activeSession]);
+    }
     alert("Тренування збережено!");
     setView('cycle');
     setActiveSession(null);
   };
 
-  const createCycle = (newCycle: TrainingCycle) => {
-    setCycles([...cycles.map(c => ({...c, isActive: false})), newCycle]);
-    setView('home');
+  const createOrUpdateCycle = (newCycle: TrainingCycle) => {
+    const existingIndex = cycles.findIndex(c => c.id === newCycle.id);
+    if (existingIndex >= 0) {
+       const newCycles = [...cycles];
+       newCycles[existingIndex] = newCycle;
+       setCycles(newCycles);
+       setView('cycle');
+    } else {
+       setCycles([...cycles.map(c => ({...c, isActive: false})), newCycle]);
+       setView('home');
+    }
   };
 
   const deleteCycle = (id: string) => {
@@ -142,6 +163,29 @@ export default function GymApp() {
         onBack={() => setView('home')} 
         onStartWorkout={prepareNewWorkout} 
         onDeleteSession={deleteWorkoutSession}
+        onEditCycle={() => setView('edit_cycle')}
+        onViewStats={() => setView('stats')}
+        onEditSession={prepareEditWorkout}
+      />
+    );
+  }
+
+  if (view === 'edit_cycle' && selectedCycle) {
+    return (
+      <CycleFormView 
+        initialCycle={selectedCycle}
+        onBack={() => setView('cycle')} 
+        onSaveCycle={createOrUpdateCycle} 
+      />
+    );
+  }
+
+  if (view === 'stats' && selectedCycle) {
+    return (
+      <StatsView 
+        cycle={selectedCycle} 
+        history={cycleHistory} 
+        onBack={() => setView('cycle')} 
       />
     );
   }
@@ -160,9 +204,9 @@ export default function GymApp() {
 
   if (view === 'new_cycle') {
     return (
-      <NewCycleView 
+      <CycleFormView 
         onBack={() => setView('home')} 
-        onSaveCycle={createCycle} 
+        onSaveCycle={createOrUpdateCycle} 
       />
     );
   }
