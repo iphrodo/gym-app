@@ -13,10 +13,11 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Gym FLow",
-  description: "Your best Gym Flow",
+  title: "GymFlow",
+  description: "Твій тренувальний щоденник",
   icons: {
-    icon: '/favicon.png',
+    icon: "/favicon.svg", 
+    apple: "/apple-touch-icon.png", //for iPhones
   },
 };
 
