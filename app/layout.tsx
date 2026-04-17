@@ -16,7 +16,7 @@ export const metadata: Metadata = {
   title: "Gym FLow",
   description: "Your best Gym Flow",
   icons: {
-    icon: '/favicon.svg',
+    icon: '/favicon.png',
   },
 };
 
