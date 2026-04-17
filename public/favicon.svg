@@ -1,0 +1,11 @@
+<svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="64" height="64" rx="12" fill="#F4F4F5"/>
+  
+  <g transform="translate(12, 16)">
+    <rect x="0" y="0" width="10" height="32" rx="1" fill="#18181B"/>
+    
+    <rect x="10" y="12" width="20" height="8" fill="#18181B"/>
+    
+    <rect x="30" y="0" width="10" height="32" rx="1" fill="#18181B"/>
+  </g>
+</svg>

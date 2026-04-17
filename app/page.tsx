@@ -1,65 +1,171 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
-  return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
-  );
+import React, { useState, useEffect } from 'react';
+import { TrainingCycle, WorkoutSession, DayTemplate } from '../types';
+import HomeView from '../components/HomeView';
+import CycleView from '../components/CycleView';
+import WorkoutView from '../components/WorkoutView';
+import NewCycleView from '../components/NewCycleView';
+
+const DEFAULT_CYCLE: TrainingCycle = {
+  id: "cycle-2024-v1",
+  name: "Силовий цикл v1",
+  isActive: true,
+  templates: [
+    { 
+      dayNumber: 1, 
+      label: "Спина та Тріцепс", 
+      exercises: ["Тяга блока до грудей", "Розведення рук назад", "Шраги", "Вузький жим", "Тріцепс тренажер"] 
+    },
+    { 
+      dayNumber: 2, 
+      label: "Груди та Біцепс", 
+      exercises: ["Жим штанги лежачи", "Жим в нахилі", "Розводка", "Штанга на біцепс", "Гантелі на біцепс"] 
+    },
+    { 
+      dayNumber: 3, 
+      label: "Ноги та Плечі", 
+      exercises: ["Жим ногами", "Квадріцепс тренажер", "Біцепс стегна", "Гантелі на плечі", "Прес"] 
+    }
+  ]
+};
+
+// --- Main Component ---
+
+export default function GymApp() {
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [view, setView] = useState<'home' | 'cycle' | 'new_cycle' | 'workout'>('home');
+  const [history, setHistory] = useState<WorkoutSession[]>([]);
+  const [cycles, setCycles] = useState<TrainingCycle[]>([]);
+  const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
+  const [activeSession, setActiveSession] = useState<WorkoutSession | null>(null);
+
+  // --- Persistence Logic ---
+  useEffect(() => {
+    const savedHistory = localStorage.getItem('gym-history');
+    if (savedHistory) setHistory(JSON.parse(savedHistory));
+
+    const savedCycles = localStorage.getItem('gym-cycles');
+    if (savedCycles) {
+      setCycles(JSON.parse(savedCycles));
+    } else {
+      setCycles([DEFAULT_CYCLE]);
+      localStorage.setItem('gym-cycles', JSON.stringify([DEFAULT_CYCLE]));
+    }
+    setIsLoaded(true);
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded) {
+      localStorage.setItem('gym-history', JSON.stringify(history));
+      localStorage.setItem('gym-cycles', JSON.stringify(cycles));
+    }
+  }, [history, cycles, isLoaded]);
+
+  if (!isLoaded) return null; // Avoid hydration mismatch
+
+  const selectedCycle = cycles.find(c => c.id === selectedCycleId);
+  const cycleHistory = history.filter(h => h.cycleId === selectedCycleId);
+
+  // --- Logic Handlers ---
+
+  const prepareNewWorkout = (template: DayTemplate) => {
+    const newSession: WorkoutSession = {
+      id: Date.now().toString(),
+      cycleId: selectedCycleId!,
+      date: new Date().toISOString().split('T')[0], // format: YYYY-MM-DD
+      dayLabel: template.label || `День ${template.dayNumber}`,
+      dayNumber: template.dayNumber,
+      data: template.exercises.map(name => ({ name, weight: "" }))
+    };
+    setActiveSession(newSession);
+    setView('workout');
+  };
+
+  const updateWeight = (exerciseName: string, weight: string) => {
+    if (!activeSession) return;
+    const updatedData = activeSession.data.map(item => 
+      item.name === exerciseName ? { ...item, weight } : item
+    );
+    setActiveSession({ ...activeSession, data: updatedData });
+  };
+
+  const updateSessionDate = (date: string) => {
+    if (!activeSession) return;
+    setActiveSession({ ...activeSession, date });
+  }
+
+  const saveWorkout = () => {
+    if (!activeSession) return;
+    setHistory([...history, activeSession]);
+    alert("Тренування збережено!");
+    setView('cycle');
+    setActiveSession(null);
+  };
+
+  const createCycle = (newCycle: TrainingCycle) => {
+    setCycles([...cycles.map(c => ({...c, isActive: false})), newCycle]);
+    setView('home');
+  };
+
+  const deleteCycle = (id: string) => {
+    setCycles(cycles.filter(c => c.id !== id));
+    setHistory(history.filter(h => h.cycleId !== id)); // clean up history
+    if (selectedCycleId === id) {
+      setView('home');
+      setSelectedCycleId(null);
+    }
+  };
+
+  const deleteWorkoutSession = (sessionId: string) => {
+    setHistory(history.filter(h => h.id !== sessionId));
+  };
+
+  // --- Render Views ---
+
+  if (view === 'home') {
+    return (
+      <HomeView 
+        cycles={cycles} 
+        onSelectCycle={(id) => { setSelectedCycleId(id); setView('cycle'); }} 
+        onNewCycle={() => setView('new_cycle')} 
+        onDeleteCycle={deleteCycle}
+      />
+    );
+  }
+
+  if (view === 'cycle' && selectedCycle) {
+    return (
+      <CycleView 
+        selectedCycle={selectedCycle} 
+        cycleHistory={cycleHistory} 
+        onBack={() => setView('home')} 
+        onStartWorkout={prepareNewWorkout} 
+        onDeleteSession={deleteWorkoutSession}
+      />
+    );
+  }
+
+  if (view === 'workout' && activeSession) {
+    return (
+      <WorkoutView 
+        activeSession={activeSession} 
+        onCancel={() => { setView('cycle'); setActiveSession(null); }} 
+        onSave={saveWorkout} 
+        onUpdateDate={updateSessionDate} 
+        onUpdateWeight={updateWeight} 
+      />
+    );
+  }
+
+  if (view === 'new_cycle') {
+    return (
+      <NewCycleView 
+        onBack={() => setView('home')} 
+        onSaveCycle={createCycle} 
+      />
+    );
+  }
+
+  return null;
 }
