@@ -1,24 +1,68 @@
 "use client";
 
 import React from 'react';
-import { TrainingCycle } from '../types';
+import { TrainingCycle, WorkoutSession } from '../types';
 
 interface HomeViewProps {
   cycles: TrainingCycle[];
+  history: WorkoutSession[];
   onSelectCycle: (id: string) => void;
   onNewCycle: () => void;
   onDeleteCycle: (id: string) => void;
 }
 
-export default function HomeView({ cycles, onSelectCycle, onNewCycle, onDeleteCycle }: HomeViewProps) {
+export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, onDeleteCycle }: HomeViewProps) {
+  const recentHistory = history
+    .slice()
+    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || Number(b.id) - Number(a.id))
+    .slice(0, 3);
   return (
     <main className="min-h-screen bg-zinc-50 p-6 font-sans">
       <div className="max-w-md mx-auto">
-        <header className="mb-10">
+        <header className="mb-8">
           <h1 className="text-4xl font-black text-zinc-900 tracking-tight">GymFlow</h1>
-          <p className="text-zinc-500 font-medium tracking-tight">Твої тренувальні цикли</p>
+          <p className="text-zinc-500 font-medium tracking-tight">Твій тренувальний щоденник</p>
         </header>
 
+        {recentHistory.length > 0 && (
+          <div className="mb-10">
+            <h3 className="font-bold text-zinc-800 mb-4 px-2">Останні тренування</h3>
+            <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
+              {recentHistory.map(session => (
+                <div key={session.id} className="min-w-[85%] snap-center bg-zinc-900 text-white p-6 rounded-[2.5rem] shadow-xl shadow-zinc-900/20">
+                  <div className="flex justify-between items-baseline mb-4 border-b border-white/10 pb-4">
+                    <h4 className="font-black text-lg leading-tight w-2/3">{session.dayLabel}</h4>
+                    <span className="text-[10px] font-black text-zinc-400 bg-white/10 px-3 py-1.5 rounded-full uppercase tracking-wider">{session.date}</span>
+                  </div>
+                  <div className="space-y-3">
+                    {session.data.filter(d => d.weight).length > 0 
+                      ? session.data.filter(d => d.weight).map((ex, i) => (
+                        <div key={i} className="flex justify-between items-center text-sm border-b border-white/5 pb-2 last:border-0 last:pb-0">
+                          <span className="text-zinc-400 truncate pr-4 text-xs font-bold leading-tight">{ex.name}</span>
+                          <span className="font-black text-white whitespace-nowrap bg-white/10 px-2 py-1 rounded-lg">{ex.weight} кг</span>
+                        </div>
+                      ))
+                      : <div className="text-zinc-500 text-xs font-bold">Немає записаних вправ</div>
+                    }
+                  </div>
+                </div>
+              ))}
+            </div>
+            
+            {/* Minimal inline CSS to hide scrollbar while keeping functionality */}
+            <style jsx>{`
+              .hide-scrollbar::-webkit-scrollbar {
+                display: none;
+              }
+              .hide-scrollbar {
+                -ms-overflow-style: none;  /* IE and Edge */
+                scrollbar-width: none;  /* Firefox */
+              }
+            `}</style>
+          </div>
+        )}
+
+        <h3 className="font-bold text-zinc-800 mb-4 px-2 mt-4">Всі цикли</h3>
         <div className="grid gap-4">
           {cycles.map((cycle) => (
             <div

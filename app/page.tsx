@@ -148,6 +148,7 @@ export default function GymApp() {
     return (
       <HomeView 
         cycles={cycles} 
+        history={history}
         onSelectCycle={(id) => { setSelectedCycleId(id); setView('cycle'); }} 
         onNewCycle={() => setView('new_cycle')} 
         onDeleteCycle={deleteCycle}
