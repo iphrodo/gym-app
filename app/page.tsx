@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { TrainingCycle, WorkoutSession, DayTemplate } from '../types';
+import { supabase } from '../lib/supabaseClient';
 import HomeView from '../components/HomeView';
 import CycleView from '../components/CycleView';
 import WorkoutView from '../components/WorkoutView';
@@ -43,25 +44,49 @@ export default function GymApp() {
 
   // --- Persistence Logic ---
   useEffect(() => {
-    const savedHistory = localStorage.getItem('gym-history');
-    if (savedHistory) setHistory(JSON.parse(savedHistory));
+    const fetchData = async () => {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.error("Supabase config is missing, using initial state as fallback.");
+        setCycles([DEFAULT_CYCLE]);
+        setIsLoaded(true);
+        return;
+      }
 
-    const savedCycles = localStorage.getItem('gym-cycles');
-    if (savedCycles) {
-      setCycles(JSON.parse(savedCycles));
-    } else {
-      setCycles([DEFAULT_CYCLE]);
-      localStorage.setItem('gym-cycles', JSON.stringify([DEFAULT_CYCLE]));
-    }
-    setIsLoaded(true);
+      const { data: cyclesData, error: cyclesError } = await supabase.from('cycles').select('*');
+      if (cyclesData && cyclesData.length > 0) {
+        setCycles(cyclesData.map(c => ({
+          id: c.id,
+          name: c.name,
+          isActive: c.is_active,
+          templates: c.templates
+        })));
+      } else {
+        await supabase.from('cycles').insert([{
+           id: DEFAULT_CYCLE.id,
+           name: DEFAULT_CYCLE.name,
+           is_active: DEFAULT_CYCLE.isActive,
+           templates: DEFAULT_CYCLE.templates
+        }]);
+        setCycles([DEFAULT_CYCLE]);
+      }
+
+      const { data: historyData, error: historyError } = await supabase.from('workout_sessions').select('*');
+      if (historyData) {
+        setHistory(historyData.map(h => ({
+          id: h.id,
+          cycleId: h.cycle_id,
+          date: h.date,
+          dayLabel: h.day_label,
+          dayNumber: h.day_number,
+          data: h.data
+        })));
+      }
+
+      setIsLoaded(true);
+    };
+
+    fetchData();
   }, []);
-
-  useEffect(() => {
-    if (isLoaded) {
-      localStorage.setItem('gym-history', JSON.stringify(history));
-      localStorage.setItem('gym-cycles', JSON.stringify(cycles));
-    }
-  }, [history, cycles, isLoaded]);
 
   if (!isLoaded) return null; // Avoid hydration mismatch
 
@@ -101,8 +126,26 @@ export default function GymApp() {
     setActiveSession({ ...activeSession, date });
   }
 
-  const saveWorkout = () => {
+  const saveWorkout = async () => {
     if (!activeSession) return;
+    
+    // Fallback error guard if not configured
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return alert("Не додано підключення Supabase");
+
+    const { error } = await supabase.from('workout_sessions').upsert({
+       id: activeSession.id,
+       cycle_id: activeSession.cycleId,
+       date: activeSession.date,
+       day_label: activeSession.dayLabel,
+       day_number: activeSession.dayNumber,
+       data: activeSession.data
+    });
+    
+    if (error) {
+       console.error(error);
+       return alert("Помилка збереження в базу даних!");
+    }
+
     const existingIndex = history.findIndex(h => h.id === activeSession.id);
     if (existingIndex >= 0) {
       const newHistory = [...history];
@@ -116,7 +159,21 @@ export default function GymApp() {
     setActiveSession(null);
   };
 
-  const createOrUpdateCycle = (newCycle: TrainingCycle) => {
+  const createOrUpdateCycle = async (newCycle: TrainingCycle) => {
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return alert("Не додано підключення Supabase");
+
+    const { error } = await supabase.from('cycles').upsert({
+      id: newCycle.id,
+      name: newCycle.name,
+      is_active: newCycle.isActive,
+      templates: newCycle.templates
+    });
+
+    if (error) {
+       console.error(error);
+       return alert("Помилка збереження циклу в базу!");
+    }
+
     const existingIndex = cycles.findIndex(c => c.id === newCycle.id);
     if (existingIndex >= 0) {
        const newCycles = [...cycles];
@@ -126,10 +183,14 @@ export default function GymApp() {
     } else {
        setCycles([...cycles.map(c => ({...c, isActive: false})), newCycle]);
        setView('home');
+       await supabase.from('cycles').update({ is_active: false }).neq('id', newCycle.id);
     }
   };
 
-  const deleteCycle = (id: string) => {
+  const deleteCycle = async (id: string) => {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      await supabase.from('cycles').delete().eq('id', id);
+    }
     setCycles(cycles.filter(c => c.id !== id));
     setHistory(history.filter(h => h.cycleId !== id)); // clean up history
     if (selectedCycleId === id) {
@@ -138,7 +199,10 @@ export default function GymApp() {
     }
   };
 
-  const deleteWorkoutSession = (sessionId: string) => {
+  const deleteWorkoutSession = async (sessionId: string) => {
+    if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+      await supabase.from('workout_sessions').delete().eq('id', sessionId);
+    }
     setHistory(history.filter(h => h.id !== sessionId));
   };
 
