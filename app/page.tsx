@@ -1,8 +1,10 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { Session } from '@supabase/supabase-js';
 import { TrainingCycle, WorkoutSession, DayTemplate } from '../types';
 import { supabase } from '../lib/supabaseClient';
+import AuthView from '../components/AuthView';
 import HomeView from '../components/HomeView';
 import CycleView from '../components/CycleView';
 import WorkoutView from '../components/WorkoutView';
@@ -35,6 +37,8 @@ const DEFAULT_CYCLE: TrainingCycle = {
 // --- Main Component ---
 
 export default function GymApp() {
+  const [session, setSession] = useState<Session | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
   const [view, setView] = useState<'home' | 'cycle' | 'new_cycle' | 'edit_cycle' | 'workout' | 'stats'>('home');
   const [history, setHistory] = useState<WorkoutSession[]>([]);
@@ -42,16 +46,27 @@ export default function GymApp() {
   const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
   const [activeSession, setActiveSession] = useState<WorkoutSession | null>(null);
 
+  // --- Auth Session Logic ---
+  useEffect(() => {
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      setSession(session);
+      setAuthLoading(false);
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
+
   // --- Persistence Logic ---
   useEffect(() => {
     const fetchData = async () => {
-      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-        console.error("Supabase config is missing, using initial state as fallback.");
-        setCycles([DEFAULT_CYCLE]);
-        setIsLoaded(true);
-        return;
-      }
-
+      if (!session) return; // Do not fetch unless user is logged in
+      
       const { data: cyclesData, error: cyclesError } = await supabase.from('cycles').select('*');
       if (cyclesData && cyclesData.length > 0) {
         setCycles(cyclesData.map(c => ({
@@ -85,10 +100,20 @@ export default function GymApp() {
       setIsLoaded(true);
     };
 
-    fetchData();
-  }, []);
+    if (session) fetchData();
+  }, [session]);
 
-  if (!isLoaded) return null; // Avoid hydration mismatch
+  if (authLoading) {
+    return <div className="min-h-screen bg-zinc-50 flex items-center justify-center font-sans font-black text-zinc-400">Перевірка сесії...</div>;
+  }
+
+  if (!session) {
+    return <AuthView />;
+  }
+
+  if (!isLoaded) {
+    return <div className="min-h-screen bg-zinc-50 flex items-center justify-center font-sans font-black text-zinc-400">Завантаження даних...</div>;
+  }
 
   const selectedCycle = cycles.find(c => c.id === selectedCycleId);
   const cycleHistory = history.filter(h => h.cycleId === selectedCycleId);

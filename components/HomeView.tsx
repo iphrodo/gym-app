@@ -1,7 +1,6 @@
-"use client";
-
 import React from 'react';
 import { TrainingCycle, WorkoutSession } from '../types';
+import { supabase } from '../lib/supabaseClient';
 
 interface HomeViewProps {
   cycles: TrainingCycle[];
@@ -19,9 +18,17 @@ export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, o
   return (
     <main className="min-h-screen bg-zinc-50 p-6 font-sans">
       <div className="max-w-md mx-auto">
-        <header className="mb-8">
-          <h1 className="text-4xl font-black text-zinc-900 tracking-tight">GymFlow</h1>
-          <p className="text-zinc-500 font-medium tracking-tight">Твій тренувальний щоденник</p>
+        <header className="mb-8 flex justify-between items-start">
+          <div>
+            <h1 className="text-4xl font-black text-zinc-900 tracking-tight">GymFlow</h1>
+            <p className="text-zinc-500 font-medium tracking-tight">Твій тренувальний щоденник</p>
+          </div>
+          <button 
+            onClick={() => supabase.auth.signOut()}
+            className="text-[10px] font-black uppercase tracking-wider text-zinc-500 bg-white border border-zinc-200 px-3 py-1.5 rounded-xl hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
+          >
+            Вийти
+          </button>
         </header>
 
         {recentHistory.length > 0 && (
