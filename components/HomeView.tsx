@@ -8,9 +8,10 @@ interface HomeViewProps {
   onSelectCycle: (id: string) => void;
   onNewCycle: () => void;
   onDeleteCycle: (id: string) => void;
+  onEditSession: (session: WorkoutSession) => void;
 }
 
-export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, onDeleteCycle }: HomeViewProps) {
+export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, onDeleteCycle, onEditSession }: HomeViewProps) {
   const recentHistory = history
     .slice()
     .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || Number(b.id) - Number(a.id))
@@ -37,9 +38,17 @@ export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, o
             <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
               {recentHistory.map(session => (
                 <div key={session.id} className="min-w-[85%] snap-center bg-zinc-900 text-white p-6 rounded-[2.5rem] shadow-xl shadow-zinc-900/20">
-                  <div className="flex justify-between items-baseline mb-4 border-b border-white/10 pb-4">
-                    <h4 className="font-black text-lg leading-tight w-2/3">{session.dayLabel}</h4>
+                  <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
+                    <h4 className="font-black text-lg leading-tight w-1/2">{session.dayLabel}</h4>
                     <span className="text-[10px] font-black text-zinc-400 bg-white/10 px-3 py-1.5 rounded-full uppercase tracking-wider">{session.date}</span>
+                    <button
+                      onClick={() => onEditSession(session)}
+                      className="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 p-2 rounded-full transition-colors"
+                      aria-label="Редагувати тренування"
+                      title="Редагувати тренування"
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
+                    </button>
                   </div>
                   <div className="space-y-3">
                     {session.data.filter(d => d.weight).length > 0 

@@ -246,6 +246,7 @@ export default function GymApp() {
         onSelectCycle={(id) => { setSelectedCycleId(id); setView('cycle'); }} 
         onNewCycle={() => setView('new_cycle')} 
         onDeleteCycle={deleteCycle}
+        onEditSession={prepareEditWorkout}
       />
     );
   }
@@ -281,6 +282,7 @@ export default function GymApp() {
         cycle={selectedCycle} 
         history={cycleHistory} 
         onBack={() => setView('cycle')} 
+        onEditSession={prepareEditWorkout}
       />
     );
   }
