@@ -138,13 +138,18 @@ export default function GymApp() {
     setView('workout');
   };
 
-  const updateWeight = (exerciseName: string, weight: string) => {
-    if (!activeSession) return;
-    const updatedData = activeSession.data.map(item => 
-      item.name === exerciseName ? { ...item, weight } : item
-    );
-    setActiveSession({ ...activeSession, data: updatedData });
-  };
+  const updateExerciseValues = (exerciseName: string, field: 'weight' | 'reps' | 'comment', value: string) => {
+  if (!activeSession) return;
+  
+  const updatedData = activeSession.data.map(item => 
+    // Завдяки квадратним дужкам [field], JavaScript сам зрозуміє
+    // чи ви оновлюєте вагу, чи повторення
+    item.name === exerciseName ? { ...item, [field]: value } : item
+  );
+  
+  setActiveSession({ ...activeSession, data: updatedData });
+};
+
 
   const updateSessionDate = (date: string) => {
     if (!activeSession) return;
@@ -287,7 +292,7 @@ export default function GymApp() {
         onCancel={() => { setView('cycle'); setActiveSession(null); }} 
         onSave={saveWorkout} 
         onUpdateDate={updateSessionDate} 
-        onUpdateWeight={updateWeight} 
+        onUpdateExercise={updateExerciseValues} 
       />
     );
   }

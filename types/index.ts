@@ -14,6 +14,8 @@ export interface TrainingCycle {
 export interface ExerciseSet {
   name: string;
   weight: string;
+  reps?: number;
+  comment?: string;
 }
 
 export interface WorkoutSession {
