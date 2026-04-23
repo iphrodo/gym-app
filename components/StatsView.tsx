@@ -81,24 +81,68 @@ export default function StatsView({ cycle, history, onBack, onEditSession }: Sta
                   </div>
                   
                   {/* Chart view */}
-                  <div className="relative h-32 w-full flex items-end justify-between gap-1 mb-4 pb-2">
-                     <div className="absolute bottom-0 w-full border-b-2 border-zinc-100 -z-10"></div>
+                  <div className="relative h-32 w-full mb-4 pb-2">
+                     <div className="absolute bottom-2 w-full border-b-2 border-zinc-100"></div>
+                     <svg className="absolute inset-0 w-full h-full overflow-visible">
+                        {/* Lines */}
+                        {dataList.map((d, i) => {
+                          if (i === dataList.length - 1) return null;
+                          const N = dataList.length;
+                          const getX = (idx: number) => N === 1 ? 50 : 5 + (idx / (N-1)) * 90;
+                          const getY = (val: number) => {
+                             const p = maxW === minW ? 50 : ((val - minW) / (maxW - minW)) * 100;
+                             return 100 - (15 + p * 0.7);
+                          };
+                          
+                          return (
+                             <line 
+                               key={`line-${i}`}
+                               x1={`${getX(i)}%`} y1={`${getY(d.weight)}%`}
+                               x2={`${getX(i+1)}%`} y2={`${getY(dataList[i+1].weight)}%`}
+                               className="stroke-zinc-900 opacity-30"
+                               strokeWidth="3"
+                               strokeLinecap="round"
+                             />
+                          );
+                        })}
+                        {/* Points */}
+                        {dataList.map((d, i) => {
+                          const N = dataList.length;
+                          const x = N === 1 ? 50 : 5 + (i / (N-1)) * 90;
+                          const p = maxW === minW ? 50 : ((d.weight - minW) / (maxW - minW)) * 100;
+                          const y = 100 - (15 + p * 0.7);
+                          
+                          return (
+                             <circle 
+                               key={`pt-${i}`}
+                               cx={`${x}%`} cy={`${y}%`}
+                               r="5"
+                               className="fill-white stroke-zinc-900 transition-all duration-300 pointer-events-none"
+                               strokeWidth="3"
+                             />
+                          );
+                       })}
+                     </svg>
+                     
+                     {/* Tooltips */}
                      {dataList.map((d, i) => {
-                       const percentage = maxW === minW ? 50 : ((d.weight - minW) / (maxW - minW)) * 100;
-                       return (
-                         <div key={i} className="flex flex-col items-center flex-1 group">
-                           <div className="w-full relative flex justify-center items-end" style={{ height: '100px' }}>
-                             <div 
-                               className="w-full bg-zinc-900 rounded-t-lg transition-all duration-300 opacity-30 group-hover:opacity-100 min-h-[10%]"
-                               style={{ height: `${Math.max(10, percentage)}%` }}
-                             >
-                                <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                                  {d.weight} kg
-                                </div>
+                        const N = dataList.length;
+                        const x = N === 1 ? 50 : 5 + (i / (N-1)) * 90;
+                        const p = maxW === minW ? 50 : ((d.weight - minW) / (maxW - minW)) * 100;
+                        const y = 100 - (15 + p * 0.7);
+                        return (
+                           <div 
+                             key={`tooltip-${i}`}
+                             className="absolute w-8 h-8 -translate-x-1/2 -translate-y-1/2 cursor-pointer group z-10"
+                             style={{ left: `${x}%`, top: `${y}%` }}
+                           >
+                             <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none">
+                               {d.weight} kg
                              </div>
+                             {/* Hover effect for the point */}
+                             <div className="absolute inset-0 rounded-full border-2 border-transparent group-hover:border-zinc-900 transition-all scale-50 group-hover:scale-100 opacity-20 pointer-events-none"></div>
                            </div>
-                         </div>
-                       )
+                        );
                      })}
                   </div>
                   
