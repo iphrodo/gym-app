@@ -49,7 +49,7 @@ export default function WorkoutView({
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <input 
-                    type="number"
+                    type="text"
                     inputMode="decimal"
                     value={exercise.weight}
                     onChange={(e) => onUpdateExercise(exercise.name, 'weight', e.target.value)}
