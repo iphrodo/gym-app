@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "GymFlow",
-  description: "Твій тренувальний щоденник",
+  description: "Your workout journal",
   icons: {
     icon: "/favicon.svg", 
     apple: "/apple-touch-icon.png", //for iPhones

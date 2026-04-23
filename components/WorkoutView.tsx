@@ -23,17 +23,17 @@ export default function WorkoutView({
       <div className="max-w-md mx-auto">
         <header className="flex items-center justify-between mb-8">
           <button onClick={onCancel} className="text-zinc-400 font-bold hover:text-zinc-900">
-            ← Скасувати
+            ← Cancel
           </button>
           <div className="text-center">
-            <h2 className="font-black text-zinc-900">День {activeSession.dayNumber}</h2>
+            <h2 className="font-black text-zinc-900">Day {activeSession.dayNumber}</h2>
             <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">{activeSession.dayLabel}</p>
           </div>
           <div className="w-20"></div>
         </header>
 
         <div className="bg-white p-6 rounded-[2.2rem] shadow-sm border border-zinc-100 mb-6 focus-within:ring-2 focus-within:ring-zinc-900 transition-all">
-          <label className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Дата тренування</label>
+          <label className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Workout date</label>
           <input 
             type="date"
             value={activeSession.date}
@@ -56,7 +56,7 @@ export default function WorkoutView({
                     placeholder="0.0"
                     className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl"
                   />
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">кг</span>
+                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">kg</span>
                 </div>
                 <div className="relative">
                   <input
@@ -64,7 +64,7 @@ export default function WorkoutView({
                     inputMode="decimal"
                     value={exercise.reps}
                     onChange={(e) => onUpdateExercise(exercise.name, 'reps', e.target.value)}
-                    placeholder="К-ть повторень"
+                    placeholder="Num of reps"
                     className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl"
                   />
                 </div>
@@ -74,7 +74,7 @@ export default function WorkoutView({
                     type="textarea"
                     value={exercise.comment}
                     onChange={(e) => onUpdateExercise(exercise.name, 'comment', e.target.value)}
-                    placeholder="Коментар"
+                    placeholder="Comment"
                     className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl"
                   />
                 </div>
@@ -86,7 +86,7 @@ export default function WorkoutView({
           onClick={onSave}
           className="w-full mt-10 bg-zinc-900 text-white py-5 rounded-[2rem] font-black text-xl shadow-xl shadow-zinc-300 hover:-translate-y-1 hover:shadow-2xl active:scale-95 transition-all duration-300"
         >
-          Зберегти результати
+          Save results
         </button>
       </div>
     </main>

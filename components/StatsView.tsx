@@ -52,10 +52,10 @@ export default function StatsView({ cycle, history, onBack, onEditSession }: Sta
       <div className="max-w-md mx-auto">
         <header className="flex items-center justify-between mb-8">
           <button onClick={onBack} className="text-zinc-400 font-bold hover:text-zinc-900">
-            ← Назад
+            ← Back
           </button>
           <div className="text-center">
-             <h2 className="font-black text-zinc-900">Статистика</h2>
+             <h2 className="font-black text-zinc-900">Statistics</h2>
              <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">{cycle.name}</p>
           </div>
           <div className="w-16"></div>
@@ -63,7 +63,7 @@ export default function StatsView({ cycle, history, onBack, onEditSession }: Sta
 
         {Object.keys(exerciseStats).length === 0 ? (
           <div className="p-6 bg-white rounded-[2.5rem] border border-zinc-100 text-center text-zinc-500 font-medium shadow-sm">
-            Ще немає записаних результатів для статистики.
+            No results recorded for statistics yet.
           </div>
         ) : (
           <div className="space-y-6">
@@ -76,7 +76,7 @@ export default function StatsView({ cycle, history, onBack, onEditSession }: Sta
                   <div className="flex items-center justify-between mb-6">
                      <h3 className="font-bold text-zinc-800 leading-tight">{name}</h3>
                      <span className="text-[10px] uppercase font-black tracking-wider text-green-600 bg-green-50 px-3 py-1 rounded-full">
-                       Макс {maxW} кг
+                       Max {maxW} kg
                      </span>
                   </div>
                   
@@ -93,7 +93,7 @@ export default function StatsView({ cycle, history, onBack, onEditSession }: Sta
                                style={{ height: `${Math.max(10, percentage)}%` }}
                              >
                                 <div className="absolute -top-7 left-1/2 -translate-x-1/2 bg-zinc-900 text-white text-[10px] font-black px-2 py-1 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10">
-                                  {d.weight} кг
+                                  {d.weight} kg
                                 </div>
                              </div>
                            </div>
@@ -107,13 +107,13 @@ export default function StatsView({ cycle, history, onBack, onEditSession }: Sta
                      {dataList.slice().reverse().slice(0, 3).map((d, i) => (
                        <div key={i} className="flex justify-between items-center bg-zinc-50 px-4 py-2.5 rounded-xl text-sm">
                          <span className="text-zinc-500 font-medium text-xs">{d.date}</span>
-                         <span className="font-black text-zinc-900">{d.weight} кг</span>
+                         <span className="font-black text-zinc-900">{d.weight} kg</span>
                          {console.log(d)}
                          <button
                             onClick={() => onEditSession(d.session)}
                             className="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 p-2 rounded-full transition-colors"
-                            aria-label="Редагувати тренування"
-                            title="Редагувати тренування"
+                            aria-label="Edit workout"
+                            title="Edit workout"
                           >
                             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
                           </button>

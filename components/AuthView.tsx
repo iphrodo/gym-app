@@ -15,11 +15,11 @@ export default function AuthView() {
 
     if (isLogin) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) alert("Помилка входу: " + error.message);
+      if (error) alert("Login error: " + error.message);
     } else {
       const { error } = await supabase.auth.signUp({ email, password });
-      if (error) alert("Помилка реєстрації: " + error.message);
-      else alert('Успішно! Тепер ви увійшли.');
+      if (error) alert("Registration error: " + error.message);
+      else alert('Success! You are now logged in.');
     }
     setLoading(false);
   };
@@ -31,7 +31,7 @@ export default function AuthView() {
           <h1 className="text-5xl font-black text-zinc-900 tracking-tight mb-2">GymFlow</h1>
           <p className="text-zinc-500 font-medium tracking-tight mt-2 pb-6 border-b-2 border-zinc-200 w-16 mx-auto"></p>
           <h2 className="text-2xl font-bold mt-8 text-zinc-800">
-            {isLogin ? "З поверненням" : "Створити акаунт"}
+            {isLogin ? "Welcome back" : "Create account"}
           </h2>
         </header>
 
@@ -49,7 +49,7 @@ export default function AuthView() {
           </div>
 
           <div>
-            <label className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Пароль</label>
+            <label className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Password</label>
             <input 
               type="password"
               value={password}
@@ -66,17 +66,17 @@ export default function AuthView() {
             disabled={loading}
             className="w-full mt-4 bg-zinc-900 text-white py-5 rounded-[2rem] font-black text-lg shadow-xl shadow-zinc-300 hover:bg-zinc-800 active:scale-95 transition-all disabled:opacity-50"
           >
-            {loading ? "Опрацювання..." : (isLogin ? "Увійти" : "Продовжити")}
+            {loading ? "Processing..." : (isLogin ? "Log in" : "Continue")}
           </button>
         </form>
 
         <p className="text-center mt-8 text-zinc-500 font-medium text-sm">
-          {isLogin ? "Вперше тут?" : "Вже маєте акаунт?"}{' '}
+          {isLogin ? "First time here?" : "Already have an account?"}{' '}
           <button 
             onClick={() => setIsLogin(!isLogin)}
             className="font-black text-zinc-900 hover:underline"
           >
-            {isLogin ? "Зареєструватись" : "Увійти"}
+            {isLogin ? "Sign up" : "Log in"}
           </button>
         </p>
       </div>

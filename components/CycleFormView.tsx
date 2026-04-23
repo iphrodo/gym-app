@@ -17,7 +17,7 @@ export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: Cyc
   );
 
   const handleSave = () => {
-    if (!cycleName) return alert("Введіть назву циклу");
+    if (!cycleName) return alert("Enter cycle name");
     
     // Clean up empty lines
     const cleanedDays = cycleDays.map(d => ({
@@ -40,20 +40,20 @@ export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: Cyc
       <div className="max-w-md mx-auto">
         <header className="flex items-center justify-between mb-8">
           <button onClick={onBack} className="text-zinc-400 font-bold hover:text-zinc-900">
-            ← Назад
+            ← Back
           </button>
-          <h2 className="font-black text-zinc-900">{isEditing ? "Редагування циклу" : "Новий цикл"}</h2>
+          <h2 className="font-black text-zinc-900">{isEditing ? "Edit cycle" : "New cycle"}</h2>
           <div className="w-16"></div>
         </header>
 
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-[2.2rem] shadow-sm border border-zinc-100 focus-within:ring-2 focus-within:ring-zinc-900 transition-all">
-            <label className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Назва циклу</label>
+            <label className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Cycle name</label>
             <input 
               type="text"
               value={cycleName}
               onChange={(e) => setCycleName(e.target.value)}
-              placeholder="Напр., Силовий цикл Зима 2024"
+              placeholder="E.g., Winter Power Cycle 2024"
               className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-bold text-zinc-900"
             />
           </div>
@@ -61,19 +61,19 @@ export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: Cyc
           {cycleDays.map((day, dayIndex) => (
             <div key={dayIndex} className="bg-white p-6 rounded-[2.2rem] shadow-sm border border-zinc-100">
               <div className="flex justify-between items-center mb-6">
-                <h3 className="font-black text-lg text-zinc-900">День {day.dayNumber}</h3>
+                <h3 className="font-black text-lg text-zinc-900">Day {day.dayNumber}</h3>
                 {cycleDays.length > 1 && (
                   <button 
                     onClick={() => setCycleDays(cycleDays.filter((_, i) => i !== dayIndex))}
                     className="text-red-500 font-bold text-xs uppercase tracking-wider bg-red-50 px-3 py-1.5 rounded-full"
                   >
-                    Видалити день
+                    Delete day
                   </button>
                 )}
               </div>
 
               <div className="mb-5">
-                <label className="block text-[10px] uppercase font-black text-zinc-400 mb-2">Назва дня (опціонально)</label>
+                <label className="block text-[10px] uppercase font-black text-zinc-400 mb-2">Day name (optional)</label>
                 <input 
                   type="text"
                   value={day.label}
@@ -82,13 +82,13 @@ export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: Cyc
                     newDays[dayIndex].label = e.target.value;
                     setCycleDays(newDays);
                   }}
-                  placeholder="Напр., Спина і Біцепс"
+                  placeholder="E.g., Back and Biceps"
                   className="w-full bg-zinc-50 py-3 px-4 rounded-xl outline-none text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900 transition-all"
                 />
               </div>
 
               <div>
-                <label className="block text-[10px] uppercase font-black text-zinc-400 mb-2">Вправи</label>
+                <label className="block text-[10px] uppercase font-black text-zinc-400 mb-2">Exercises</label>
                 <div className="space-y-3">
                   {day.exercises.map((ex, exIndex) => (
                     <div key={exIndex} className="flex gap-2">
@@ -100,7 +100,7 @@ export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: Cyc
                           newDays[dayIndex].exercises[exIndex] = e.target.value;
                           setCycleDays(newDays);
                         }}
-                        placeholder={`Вправа ${exIndex + 1}`}
+                        placeholder={`Exercise ${exIndex + 1}`}
                         className="flex-1 bg-zinc-50 py-3 px-4 rounded-xl outline-none text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900 transition-all"
                       />
                       <button 
@@ -123,7 +123,7 @@ export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: Cyc
                     }}
                     className="w-full py-4 border-2 border-dashed border-zinc-200 rounded-xl text-sm font-bold text-zinc-500 hover:bg-zinc-50 hover:border-zinc-400 hover:text-zinc-800 transition-all"
                   >
-                    + Додати вправу
+                    + Add exercise
                   </button>
                 </div>
               </div>
@@ -134,7 +134,7 @@ export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: Cyc
             onClick={() => setCycleDays([...cycleDays, { dayNumber: cycleDays.length + 1, label: "", exercises: [""] }])}
             className="w-full py-5 border-2 border-dashed border-zinc-300 rounded-[2rem] text-zinc-400 font-bold hover:bg-zinc-100 hover:text-zinc-600 transition-all text-lg"
           >
-            + Додати день
+            + Add day
           </button>
         </div>
 
@@ -142,7 +142,7 @@ export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: Cyc
           onClick={handleSave}
           className="w-full mt-8 bg-zinc-900 text-white py-5 rounded-[2rem] font-black text-xl shadow-xl shadow-zinc-300 hover:bg-zinc-800 active:scale-95 transition-all"
         >
-          {isEditing ? "Зберегти зміни" : "Створити цикл"}
+          {isEditing ? "Save changes" : "Create cycle"}
         </button>
       </div>
     </main>

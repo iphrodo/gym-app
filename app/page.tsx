@@ -13,23 +13,23 @@ import StatsView from '../components/StatsView';
 
 const DEFAULT_CYCLE: TrainingCycle = {
   id: "cycle-2024-v1",
-  name: "Силовий цикл v1",
+  name: "Power Cycle v1",
   isActive: true,
   templates: [
     { 
       dayNumber: 1, 
-      label: "Спина та Тріцепс", 
-      exercises: ["Тяга блока до грудей", "Розведення рук назад", "Шраги", "Вузький жим", "Тріцепс тренажер"] 
+      label: "Back & Triceps", 
+      exercises: ["Lat Pulldown", "Reverse Flyes", "Shrugs", "Close-Grip Bench", "Triceps Machine"] 
     },
     { 
       dayNumber: 2, 
-      label: "Груди та Біцепс", 
-      exercises: ["Жим штанги лежачи", "Жим в нахилі", "Розводка", "Штанга на біцепс", "Гантелі на біцепс"] 
+      label: "Chest & Biceps", 
+      exercises: ["Bench Press", "Incline Bench", "Dumbbell Flyes", "Barbell Curls", "Dumbbell Curls"] 
     },
     { 
       dayNumber: 3, 
-      label: "Ноги та Плечі", 
-      exercises: ["Жим ногами", "Квадріцепс тренажер", "Біцепс стегна", "Гантелі на плечі", "Прес"] 
+      label: "Legs & Shoulders", 
+      exercises: ["Leg Press", "Leg Extensions", "Leg Curls", "Dumbbell Shoulder Press", "Abs"] 
     }
   ]
 };
@@ -104,7 +104,7 @@ export default function GymApp() {
   }, [session]);
 
   if (authLoading) {
-    return <div className="min-h-screen bg-zinc-50 flex items-center justify-center font-sans font-black text-zinc-400">Перевірка сесії...</div>;
+    return <div className="min-h-screen bg-zinc-50 flex items-center justify-center font-sans font-black text-zinc-400">Checking session...</div>;
   }
 
   if (!session) {
@@ -112,7 +112,7 @@ export default function GymApp() {
   }
 
   if (!isLoaded) {
-    return <div className="min-h-screen bg-zinc-50 flex items-center justify-center font-sans font-black text-zinc-400">Завантаження даних...</div>;
+    return <div className="min-h-screen bg-zinc-50 flex items-center justify-center font-sans font-black text-zinc-400">Loading data...</div>;
   }
 
   const selectedCycle = cycles.find(c => c.id === selectedCycleId);
@@ -125,7 +125,7 @@ export default function GymApp() {
       id: Date.now().toString(),
       cycleId: selectedCycleId!,
       date: new Date().toISOString().split('T')[0], // format: YYYY-MM-DD
-      dayLabel: template.label || `День ${template.dayNumber}`,
+      dayLabel: template.label || `Day ${template.dayNumber}`,
       dayNumber: template.dayNumber,
       data: template.exercises.map(name => ({ name, weight: "" }))
     };
@@ -142,8 +142,8 @@ export default function GymApp() {
   if (!activeSession) return;
   
   const updatedData = activeSession.data.map(item => 
-    // Завдяки квадратним дужкам [field], JavaScript сам зрозуміє
-    // чи ви оновлюєте вагу, чи повторення
+    // Thanks to square brackets [field], JavaScript understands
+    // whether you're updating weight or reps
     item.name === exerciseName ? { ...item, [field]: value } : item
   );
   
@@ -160,7 +160,7 @@ export default function GymApp() {
     if (!activeSession) return;
     
     // Fallback error guard if not configured
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return alert("Не додано підключення Supabase");
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return alert("Supabase connection not added");
 
     const { error } = await supabase.from('workout_sessions').upsert({
        id: activeSession.id,
@@ -173,7 +173,7 @@ export default function GymApp() {
     
     if (error) {
        console.error(error);
-       return alert("Помилка збереження в базу даних!");
+       return alert("Error saving to database!");
     }
 
     const existingIndex = history.findIndex(h => h.id === activeSession.id);
@@ -184,13 +184,13 @@ export default function GymApp() {
     } else {
       setHistory([...history, activeSession]);
     }
-    alert("Тренування збережено!");
+    alert("Workout saved!");
     setView('cycle');
     setActiveSession(null);
   };
 
   const createOrUpdateCycle = async (newCycle: TrainingCycle) => {
-    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return alert("Не додано підключення Supabase");
+    if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return alert("Supabase connection not added");
 
     const { error } = await supabase.from('cycles').upsert({
       id: newCycle.id,
@@ -201,7 +201,7 @@ export default function GymApp() {
 
     if (error) {
        console.error(error);
-       return alert("Помилка збереження циклу в базу!");
+       return alert("Error saving cycle to database!");
     }
 
     const existingIndex = cycles.findIndex(c => c.id === newCycle.id);
