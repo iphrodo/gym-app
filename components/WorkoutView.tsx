@@ -49,10 +49,13 @@ export default function WorkoutView({
               <div className="flex items-center gap-4">
                 <div className="relative">
                   <input 
-                    type="text"
-                    inputMode="decimal"
+                    type="text"            
+                    inputMode="decimal"    
                     value={exercise.weight}
-                    onChange={(e) => onUpdateExercise(exercise.name, 'weight', e.target.value)}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(',', '.');
+                      onUpdateExercise(exercise.name, 'weight', val);
+                    }}
                     placeholder="0.0"
                     className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl"
                   />
