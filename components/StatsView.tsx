@@ -108,7 +108,6 @@ export default function StatsView({ cycle, history, onBack, onEditSession }: Sta
                        <div key={i} className="flex justify-between items-center bg-zinc-50 px-4 py-2.5 rounded-xl text-sm">
                          <span className="text-zinc-500 font-medium text-xs">{d.date}</span>
                          <span className="font-black text-zinc-900">{d.weight} kg</span>
-                         {console.log(d)}
                          <button
                             onClick={() => onEditSession(d.session)}
                             className="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 p-2 rounded-full transition-colors"
