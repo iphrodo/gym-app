@@ -1,0 +1,43 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+context: |
+  GymFlow: a personal workout-tracking app (Next.js 16 App Router, React 19, TypeScript, Tailwind v4).
+  Custom/modified Next.js build (see AGENTS.md) - check node_modules/next/dist/docs/ before relying on
+  framework behavior that looks unfamiliar.
+  Supabase (`@supabase/supabase-js`) is both the auth provider and the database (Postgres via REST);
+  there is no separate ORM and no server-side API routes - components call Supabase directly.
+  Entire app is a single client component (`app/page.tsx`) acting as a view-router over local
+  React state (`useState`/`useEffect`); no React Query/SWR, no routing library.
+  Domain: training cycles (multi-day workout programs) containing day templates (ordered exercise
+  lists), and workout sessions (dated logs of weight/reps/comment per exercise).
+  DB tables: `cycles` (snake_case columns: is_active, templates jsonb) and `workout_sessions`
+  (snake_case: cycle_id, day_label, day_number, data jsonb) - mapped manually to camelCase types
+  in `types/index.ts` within app/page.tsx.
+  No test framework, no i18n library (all UI strings are hardcoded English literals in components).
+  Styling: Tailwind utility classes only, "zinc" neutral palette, rounded-2xl/2.5rem cards,
+  every view component is "use client".
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+# Per-operation guidance (optional)
+# Add advisory guidance for how apply and archive work should be conducted.
+# This is separate from artifact rules above.
+# Example:
+#   operations:
+#     apply:
+#       guidance:
+#         - Keep test summaries concise
+#     archive:
+#       guidance:
+#         - Summarize the archive outcome before finishing
