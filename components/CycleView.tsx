@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { TrainingCycle, WorkoutSession, DayTemplate } from '../types';
+import { sortHistoryNewestFirst } from '../lib/sortWorkoutHistory';
 
 interface CycleViewProps {
   selectedCycle: TrainingCycle;
@@ -59,8 +60,8 @@ export default function CycleView({ selectedCycle, cycleHistory, onBack, onStart
                 className="group flex items-center justify-between p-5 bg-zinc-50 border border-zinc-100 rounded-3xl hover:bg-zinc-900 hover:text-white transition-all duration-300"
               >
                 <div className="text-left w-full pl-2">
-                  <span className="block text-[10px] font-black uppercase opacity-50 mb-1">Day {template.dayNumber}</span>
-                  <span className="text-lg font-bold">{template.label || 'Untitled'}</span>
+                  <span className="block text-[10px] font-black uppercase text-zinc-500 group-hover:text-zinc-400 mb-1">Day {template.dayNumber}</span>
+                  <span className="text-lg font-bold text-zinc-900 group-hover:text-white">{template.label || 'Untitled'}</span>
                 </div>
                 <div className="h-10 px-4 text-xs tracking-wider uppercase rounded-full bg-white group-hover:bg-zinc-800 flex items-center justify-center shadow-sm font-black text-zinc-900 group-hover:text-white transition-colors">
                   Start
@@ -73,7 +74,7 @@ export default function CycleView({ selectedCycle, cycleHistory, onBack, onStart
             <>
               <h3 className="font-bold text-zinc-800 mb-4 px-2">Workout history</h3>
               <div className="grid gap-3">
-                {cycleHistory.slice().reverse().map(session => (
+                {sortHistoryNewestFirst(cycleHistory).map(session => (
                   <div key={session.id} className="p-5 bg-zinc-50 rounded-3xl border border-zinc-100 flex items-center justify-between">
                     <div>
                       <div className="flex items-center gap-2 mb-2">
