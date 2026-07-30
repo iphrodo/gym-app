@@ -10,6 +10,7 @@ import CycleView from '../components/CycleView';
 import WorkoutView from '../components/WorkoutView';
 import CycleFormView from '../components/CycleFormView';
 import StatsView from '../components/StatsView';
+import { resolveWorkoutOrigin, WorkoutOrigin } from '../lib/workoutOrigin';
 import CalendarView from '../components/CalendarView';
 
 const DEFAULT_CYCLE: TrainingCycle = {
@@ -42,6 +43,7 @@ export default function GymApp() {
   const [authLoading, setAuthLoading] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
   const [view, setView] = useState<'home' | 'cycle' | 'new_cycle' | 'edit_cycle' | 'workout' | 'stats' | 'calendar'>('home');
+  const [previousView, setPreviousView] = useState<WorkoutOrigin>('cycle');
   const [history, setHistory] = useState<WorkoutSession[]>([]);
   const [cycles, setCycles] = useState<TrainingCycle[]>([]);
   const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
@@ -131,11 +133,13 @@ export default function GymApp() {
       data: template.exercises.map(name => ({ name, weight: "" }))
     };
     setActiveSession(newSession);
+    setPreviousView(resolveWorkoutOrigin(view));
     setView('workout');
   };
 
   const prepareEditWorkout = (session: WorkoutSession) => {
     setActiveSession(session);
+    setPreviousView(resolveWorkoutOrigin(view));
     setView('workout');
   };
 
@@ -186,7 +190,7 @@ export default function GymApp() {
       setHistory([...history, activeSession]);
     }
     alert("Workout saved!");
-    setView('cycle');
+    setView(previousView);
     setActiveSession(null);
   };
 
@@ -303,7 +307,7 @@ export default function GymApp() {
     return (
       <WorkoutView 
         activeSession={activeSession} 
-        onCancel={() => { setView('cycle'); setActiveSession(null); }} 
+        onCancel={() => { setView(previousView); setActiveSession(null); }}
         onSave={saveWorkout} 
         onUpdateDate={updateSessionDate} 
         onUpdateExercise={updateExerciseValues} 
