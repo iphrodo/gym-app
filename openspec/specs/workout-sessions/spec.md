@@ -28,7 +28,7 @@ A user SHALL be able to save a workout session's logged data to persistent stora
 
 #### Scenario: Successful save
 - **WHEN** the user clicks "Save results" on a workout with a configured Supabase connection
-- **THEN** the session is upserted to the `workout_sessions` table, added to or replacing its entry in local history, a confirmation alert is shown, and the view returns to the cycle detail screen
+- **THEN** the session is upserted to the `workout_sessions` table, added to or replacing its entry in local history, a confirmation alert is shown, and the view returns to the screen the workout was opened from
 
 #### Scenario: Save fails
 - **WHEN** the Supabase upsert for a workout session returns an error
@@ -61,7 +61,15 @@ A user SHALL be able to discard an in-progress (unsaved) workout entry.
 
 #### Scenario: Cancel editing
 - **WHEN** the user clicks "Cancel" while a workout session is open
-- **THEN** no data is saved and the view returns to the cycle detail screen
+- **THEN** no data is saved and the view returns to the screen the workout was opened from
+
+#### Scenario: Cancel editing started from the home dashboard
+- **WHEN** the user opens an existing session for editing from the home dashboard's recent workouts and clicks "Cancel" without saving
+- **THEN** no data is saved and the view returns to the home dashboard, not a blank screen or an unrelated cycle
+
+#### Scenario: Cancel editing started from the stats view
+- **WHEN** the user opens an existing session for editing from the stats table and clicks "Cancel" without saving
+- **THEN** no data is saved and the view returns to the stats view for that cycle
 
 ### Requirement: Recent Workouts on Home Dashboard
 The home dashboard SHALL show the user's most recent workout sessions across all cycles, with completed exercise weights.
