@@ -1,6 +1,7 @@
 import React from 'react';
 import { TrainingCycle, WorkoutSession } from '../types';
 import { supabase } from '../lib/supabaseClient';
+import { sortHistoryNewestFirst } from '../lib/sortWorkoutHistory';
 
 interface HomeViewProps {
   cycles: TrainingCycle[];
@@ -12,10 +13,7 @@ interface HomeViewProps {
 }
 
 export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, onDeleteCycle, onEditSession }: HomeViewProps) {
-  const recentHistory = history
-    .slice()
-    .sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime() || Number(b.id) - Number(a.id))
-    .slice(0, 3);
+  const recentHistory = sortHistoryNewestFirst(history).slice(0, 3);
   return (
     <main className="min-h-screen bg-zinc-50 p-6 font-sans">
       <div className="max-w-md mx-auto">
