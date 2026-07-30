@@ -10,6 +10,7 @@ import CycleView from '../components/CycleView';
 import WorkoutView from '../components/WorkoutView';
 import CycleFormView from '../components/CycleFormView';
 import StatsView from '../components/StatsView';
+import CalendarView from '../components/CalendarView';
 
 const DEFAULT_CYCLE: TrainingCycle = {
   id: "cycle-2024-v1",
@@ -40,7 +41,7 @@ export default function GymApp() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
-  const [view, setView] = useState<'home' | 'cycle' | 'new_cycle' | 'edit_cycle' | 'workout' | 'stats'>('home');
+  const [view, setView] = useState<'home' | 'cycle' | 'new_cycle' | 'edit_cycle' | 'workout' | 'stats' | 'calendar'>('home');
   const [history, setHistory] = useState<WorkoutSession[]>([]);
   const [cycles, setCycles] = useState<TrainingCycle[]>([]);
   const [selectedCycleId, setSelectedCycleId] = useState<string | null>(null);
@@ -247,6 +248,17 @@ export default function GymApp() {
         onNewCycle={() => setView('new_cycle')} 
         onDeleteCycle={deleteCycle}
         onEditSession={prepareEditWorkout}
+        onOpenCalendar={() => setView('calendar')}
+      />
+    );
+  }
+
+  if (view === 'calendar') {
+    return (
+      <CalendarView
+        history={history}
+        onEditSession={prepareEditWorkout}
+        onBack={() => setView('home')}
       />
     );
   }
