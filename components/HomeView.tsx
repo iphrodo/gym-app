@@ -10,9 +10,10 @@ interface HomeViewProps {
   onNewCycle: () => void;
   onDeleteCycle: (id: string) => void;
   onEditSession: (session: WorkoutSession) => void;
+  onOpenCalendar: () => void;
 }
 
-export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, onDeleteCycle, onEditSession }: HomeViewProps) {
+export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, onDeleteCycle, onEditSession, onOpenCalendar }: HomeViewProps) {
   const recentHistory = sortHistoryNewestFirst(history).slice(0, 3);
   return (
     <main className="min-h-screen bg-zinc-50 p-6 font-sans">
@@ -22,12 +23,22 @@ export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, o
             <h1 className="text-4xl font-black text-zinc-900 tracking-tight">GymFlow</h1>
             <p className="text-zinc-500 font-medium tracking-tight">Your workout journal</p>
           </div>
-          <button 
-            onClick={() => supabase.auth.signOut()}
-            className="text-[10px] font-black uppercase tracking-wider text-zinc-500 bg-white border border-zinc-200 px-3 py-1.5 rounded-xl hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
-          >
-            Log out
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={onOpenCalendar}
+              aria-label="Open calendar"
+              title="Open calendar"
+              className="text-zinc-500 bg-white border border-zinc-200 p-2.5 rounded-xl hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
+            </button>
+            <button
+              onClick={() => supabase.auth.signOut()}
+              className="text-[10px] font-black uppercase tracking-wider text-zinc-500 bg-white border border-zinc-200 px-3 py-1.5 rounded-xl hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
+            >
+              Log out
+            </button>
+          </div>
         </header>
 
         {recentHistory.length > 0 && (

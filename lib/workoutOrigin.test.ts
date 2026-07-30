@@ -14,6 +14,10 @@ describe('resolveWorkoutOrigin', () => {
     expect(resolveWorkoutOrigin('stats')).toBe('stats');
   });
 
+  it('returns calendar when the workout was opened from the calendar view', () => {
+    expect(resolveWorkoutOrigin('calendar')).toBe('calendar');
+  });
+
   it('falls back to cycle for view states that cannot open a workout', () => {
     expect(resolveWorkoutOrigin('new_cycle')).toBe('cycle');
     expect(resolveWorkoutOrigin('edit_cycle')).toBe('cycle');
