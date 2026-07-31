@@ -6,11 +6,15 @@ Let a user define and manage the multi-day workout programs ("training cycles") 
 ## Requirements
 
 ### Requirement: Default Cycle Seeding
-On first login for an account with no cycles, the app SHALL create and persist a default starter cycle so the user has something to work with immediately.
+On first login for an account with no cycles, the app SHALL create and persist a default starter cycle owned by that account, so the user has something to work with immediately.
 
 #### Scenario: Empty account
-- **WHEN** a logged-in user's `cycles` table query returns zero rows
-- **THEN** the app inserts the built-in default cycle ("Power Cycle v1", 3 day templates, active) into `cycles` and shows it
+- **WHEN** a logged-in user's owner-scoped `cycles` query returns zero rows
+- **THEN** the app inserts the built-in default cycle ("Power Cycle v1", 3 day templates, active), owned by that user, into `cycles` and shows it
+
+#### Scenario: Seeding does not leak across accounts
+- **WHEN** a new account signs in for the first time while other accounts already have cycles
+- **THEN** the new account is seeded with its own default cycle rather than seeing another account's cycles
 
 ### Requirement: Create Cycle
 A user SHALL be able to create a new training cycle with a name and one or more day templates, each with a label and an ordered list of exercises.
@@ -43,11 +47,15 @@ A user SHALL be able to edit an existing cycle's name and day templates.
 - **THEN** that day's exercise list gains or loses that entry before save
 
 ### Requirement: Single Active Cycle
-At most one training cycle SHALL be marked active at a time.
+At most one of a user's training cycles SHALL be marked active at a time. Activation state is per-account: marking one cycle active SHALL NOT affect any other account's cycles.
 
-#### Scenario: Creating a new cycle deactivates others
+#### Scenario: Creating a new cycle deactivates the user's others
 - **WHEN** a brand-new cycle (no existing id) is saved
-- **THEN** every other cycle is updated to `is_active = false` and the new cycle is active
+- **THEN** every *other cycle owned by the same user* is updated to `is_active = false` and the new cycle is active
+
+#### Scenario: Other accounts are unaffected
+- **WHEN** a user saves a brand-new cycle while other accounts also have active cycles
+- **THEN** those other accounts' cycles keep their existing active state
 
 ### Requirement: Delete Cycle
 A user SHALL be able to delete a training cycle, which also removes its associated workout history.
