@@ -10,21 +10,23 @@ export interface TrainingCycle {
   isActive: boolean;
   templates: DayTemplate[];
   userId: string;
+  createdAt: string;
 }
 
 export interface ExerciseSet {
   name: string;
   weight: string;
-  reps?: number;
-  comment?: string;
+  reps: string;
+  comment: string;
 }
 
 export interface WorkoutSession {
-  id: string; // timestamp
+  id: string;
   cycleId: string;
   date: string; // format: YYYY-MM-DD
   dayLabel: string;
   dayNumber: number;
   data: ExerciseSet[];
   userId: string;
+  createdAt: string;
 }

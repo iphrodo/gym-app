@@ -14,24 +14,25 @@ export default function CycleFormView({ initialCycle, userId, onBack, onSaveCycl
   const isEditing = !!initialCycle;
   const [cycleName, setCycleName] = useState(initialCycle?.name || "");
   const [cycleDays, setCycleDays] = useState<DayTemplate[]>(
-    initialCycle?.templates || [{ dayNumber: 1, label: "", exercises: [""] }]
+    initialCycle ? structuredClone(initialCycle.templates) : [{ dayNumber: 1, label: "", exercises: [""] }]
   );
 
   const handleSave = () => {
     if (!cycleName) return alert("Enter cycle name");
-    
+
     // Clean up empty lines
     const cleanedDays = cycleDays.map(d => ({
       ...d,
       exercises: d.exercises.filter(e => e.trim() !== "")
     }));
-    
+
     const cycle: TrainingCycle = {
-      id: initialCycle?.id || "cycle-" + Date.now(),
+      id: initialCycle?.id || "cycle-" + crypto.randomUUID(),
       name: cycleName,
       isActive: initialCycle ? initialCycle.isActive : true,
       templates: cleanedDays,
-      userId: initialCycle?.userId || userId
+      userId: initialCycle?.userId || userId,
+      createdAt: initialCycle?.createdAt || new Date().toISOString()
     };
 
     onSaveCycle(cycle);

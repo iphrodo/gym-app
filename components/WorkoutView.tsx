@@ -1,7 +1,8 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import { WorkoutSession } from '../types';
+import { parseWeight } from '../lib/exerciseValues';
 
 interface WorkoutViewProps {
   activeSession: WorkoutSession;
@@ -16,8 +17,25 @@ export default function WorkoutView({
   onCancel, 
   onSave, 
   onUpdateDate, 
-  onUpdateExercise 
+  onUpdateExercise
 }: WorkoutViewProps) {
+  const [invalidWeightDrafts, setInvalidWeightDrafts] = useState<Record<string, string>>({});
+
+  const handleWeightChange = (exerciseName: string, rawValue: string) => {
+    const val = rawValue.replace(',', '.');
+    if (val.trim() === '' || parseWeight(val) !== null) {
+      setInvalidWeightDrafts(prev => {
+        if (!(exerciseName in prev)) return prev;
+        const rest = { ...prev };
+        delete rest[exerciseName];
+        return rest;
+      });
+      onUpdateExercise(exerciseName, 'weight', val);
+    } else {
+      setInvalidWeightDrafts(prev => ({ ...prev, [exerciseName]: val }));
+    }
+  };
+
   return (
     <main className="min-h-screen bg-zinc-50 p-6 font-sans">
       <div className="max-w-md mx-auto">
@@ -48,16 +66,14 @@ export default function WorkoutView({
               <h3 className="font-bold text-zinc-800 mb-4">{exercise.name}</h3>
               <div className="flex items-center gap-4">
                 <div className="relative">
-                  <input 
-                    type="text"            
-                    inputMode="decimal"    
-                    value={exercise.weight}
-                    onChange={(e) => {
-                      const val = e.target.value.replace(',', '.');
-                      onUpdateExercise(exercise.name, 'weight', val);
-                    }}
+                  <input
+                    type="text"
+                    inputMode="decimal"
+                    value={invalidWeightDrafts[exercise.name] ?? exercise.weight}
+                    onChange={(e) => handleWeightChange(exercise.name, e.target.value)}
                     placeholder="0.0"
-                    className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900"
+                    aria-invalid={exercise.name in invalidWeightDrafts}
+                    className={`w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900 ${exercise.name in invalidWeightDrafts ? 'ring-2 ring-red-400' : ''}`}
                   />
                   <span className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">kg</span>
                 </div>
@@ -73,8 +89,7 @@ export default function WorkoutView({
                 </div>
               </div>
               <div className="flex mt-4">
-                  <input
-                    type="textarea"
+                  <textarea
                     value={exercise.comment}
                     onChange={(e) => onUpdateExercise(exercise.name, 'comment', e.target.value)}
                     placeholder="Comment"
