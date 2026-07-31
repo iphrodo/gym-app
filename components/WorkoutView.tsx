@@ -57,7 +57,7 @@ export default function WorkoutView({
                       onUpdateExercise(exercise.name, 'weight', val);
                     }}
                     placeholder="0.0"
-                    className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl"
+                    className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900"
                   />
                   <span className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">kg</span>
                 </div>
@@ -68,7 +68,7 @@ export default function WorkoutView({
                     value={exercise.reps}
                     onChange={(e) => onUpdateExercise(exercise.name, 'reps', e.target.value)}
                     placeholder="Num of reps"
-                    className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl"
+                    className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900"
                   />
                 </div>
               </div>
@@ -78,7 +78,7 @@ export default function WorkoutView({
                     value={exercise.comment}
                     onChange={(e) => onUpdateExercise(exercise.name, 'comment', e.target.value)}
                     placeholder="Comment"
-                    className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl"
+                    className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900"
                   />
                 </div>
             </div>
