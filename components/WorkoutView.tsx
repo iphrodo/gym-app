@@ -51,8 +51,9 @@ export default function WorkoutView({
         </header>
 
         <div className="bg-white p-6 rounded-[2.2rem] shadow-sm border border-zinc-100 mb-6 focus-within:ring-2 focus-within:ring-zinc-900 transition-all">
-          <label className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Workout date</label>
-          <input 
+          <label htmlFor="workout-date" className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Workout date</label>
+          <input
+            id="workout-date"
             type="date"
             value={activeSession.date}
             onChange={(e) => onUpdateDate(e.target.value)}
@@ -72,6 +73,7 @@ export default function WorkoutView({
                     value={invalidWeightDrafts[exercise.name] ?? exercise.weight}
                     onChange={(e) => handleWeightChange(exercise.name, e.target.value)}
                     placeholder="0.0"
+                    aria-label={`${exercise.name} weight`}
                     aria-invalid={exercise.name in invalidWeightDrafts}
                     className={`w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900 ${exercise.name in invalidWeightDrafts ? 'ring-2 ring-red-400' : ''}`}
                   />
@@ -84,6 +86,7 @@ export default function WorkoutView({
                     value={exercise.reps}
                     onChange={(e) => onUpdateExercise(exercise.name, 'reps', e.target.value)}
                     placeholder="Num of reps"
+                    aria-label={`${exercise.name} reps`}
                     className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900"
                   />
                 </div>
@@ -93,6 +96,7 @@ export default function WorkoutView({
                     value={exercise.comment}
                     onChange={(e) => onUpdateExercise(exercise.name, 'comment', e.target.value)}
                     placeholder="Comment"
+                    aria-label={`${exercise.name} comment`}
                     className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900"
                   />
                 </div>

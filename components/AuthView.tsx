@@ -37,8 +37,9 @@ export default function AuthView() {
 
         <form onSubmit={handleAuth} className="bg-white p-8 rounded-[2.5rem] shadow-xl shadow-zinc-200/50 border border-zinc-100 flex flex-col gap-6">
           <div>
-            <label className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Email</label>
-            <input 
+            <label htmlFor="auth-email" className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Email</label>
+            <input
+              id="auth-email"
               type="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
@@ -49,8 +50,9 @@ export default function AuthView() {
           </div>
 
           <div>
-            <label className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Password</label>
-            <input 
+            <label htmlFor="auth-password" className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Password</label>
+            <input
+              id="auth-password"
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
