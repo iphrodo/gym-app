@@ -51,8 +51,9 @@ export default function CycleFormView({ initialCycle, userId, onBack, onSaveCycl
 
         <div className="space-y-6">
           <div className="bg-white p-6 rounded-[2.2rem] shadow-sm border border-zinc-100 focus-within:ring-2 focus-within:ring-zinc-900 transition-all">
-            <label className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Cycle name</label>
-            <input 
+            <label htmlFor="cycle-name" className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Cycle name</label>
+            <input
+              id="cycle-name"
               type="text"
               value={cycleName}
               onChange={(e) => setCycleName(e.target.value)}
@@ -76,8 +77,9 @@ export default function CycleFormView({ initialCycle, userId, onBack, onSaveCycl
               </div>
 
               <div className="mb-5">
-                <label className="block text-[10px] uppercase font-black text-zinc-400 mb-2">Day name (optional)</label>
-                <input 
+                <label htmlFor={`day-name-${dayIndex}`} className="block text-[10px] uppercase font-black text-zinc-400 mb-2">Day name (optional)</label>
+                <input
+                  id={`day-name-${dayIndex}`}
                   type="text"
                   value={day.label}
                   onChange={(e) => {
@@ -104,14 +106,16 @@ export default function CycleFormView({ initialCycle, userId, onBack, onSaveCycl
                           setCycleDays(newDays);
                         }}
                         placeholder={`Exercise ${exIndex + 1}`}
+                        aria-label={`Exercise ${exIndex + 1}`}
                         className="flex-1 bg-zinc-50 py-3 px-4 rounded-xl outline-none text-sm font-bold text-zinc-900 focus:ring-2 focus:ring-zinc-900 transition-all"
                       />
-                      <button 
+                      <button
                         onClick={() => {
                           const newDays = [...cycleDays];
                           newDays[dayIndex].exercises.splice(exIndex, 1);
                           setCycleDays(newDays);
                         }}
+                        aria-label={`Remove exercise ${exIndex + 1}`}
                         className="w-11 flex-shrink-0 bg-zinc-100 text-zinc-500 font-bold rounded-xl hover:bg-red-100 hover:text-red-600 transition-colors flex items-center justify-center text-xl pb-1"
                       >
                         ×
