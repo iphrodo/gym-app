@@ -9,6 +9,7 @@ export interface TrainingCycle {
   name: string;
   isActive: boolean;
   templates: DayTemplate[];
+  userId: string;
 }
 
 export interface ExerciseSet {
@@ -25,4 +26,5 @@ export interface WorkoutSession {
   dayLabel: string;
   dayNumber: number;
   data: ExerciseSet[];
+  userId: string;
 }

@@ -5,11 +5,12 @@ import { DayTemplate, TrainingCycle } from '../types';
 
 interface CycleFormViewProps {
   initialCycle?: TrainingCycle;
+  userId: string;
   onBack: () => void;
   onSaveCycle: (cycle: TrainingCycle) => void;
 }
 
-export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: CycleFormViewProps) {
+export default function CycleFormView({ initialCycle, userId, onBack, onSaveCycle }: CycleFormViewProps) {
   const isEditing = !!initialCycle;
   const [cycleName, setCycleName] = useState(initialCycle?.name || "");
   const [cycleDays, setCycleDays] = useState<DayTemplate[]>(
@@ -29,7 +30,8 @@ export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: Cyc
       id: initialCycle?.id || "cycle-" + Date.now(),
       name: cycleName,
       isActive: initialCycle ? initialCycle.isActive : true,
-      templates: cleanedDays
+      templates: cleanedDays,
+      userId: initialCycle?.userId || userId
     };
 
     onSaveCycle(cycle);
