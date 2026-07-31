@@ -1,26 +1,171 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+  --page-bg: #fafafa;
+  --page-fg: #18181b;
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --card-bg: #ffffff;
+  --card-fg: #27272a;
+  --card-muted-fg: #a1a1aa;
+  --card-border: #f4f4f5;
+
+  --card-inverted-bg: #18181b;
+  --card-inverted-fg: #ffffff;
+  --card-inverted-muted-fg: #a1a1aa;
+  --card-inverted-border: rgba(255, 255, 255, 0.1);
+
+  --input-bg: #fafafa;
+  --input-fg: #18181b;
+  --input-muted-fg: #a1a1aa;
+  --input-border: #e4e4e7;
+
+  --muted-bg: #fafafa;
+  --muted-fg: #18181b;
+  --muted-muted-fg: #a1a1aa;
+  --muted-border: #f4f4f5;
+
+  --focus-ring: #18181b;
+
+  --danger: #dc2626;
+  --danger-fg: #ffffff;
+  --danger-muted-bg: #fef2f2;
+  --danger-muted-fg: #dc2626;
+
+  --success: #16a34a;
+  --success-fg: #ffffff;
+  --success-muted-bg: #f0fdf4;
+  --success-muted-fg: #16a34a;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --page-bg: #09090b;
+    --page-fg: #f4f4f5;
+
+    --card-bg: #18181b;
+    --card-fg: #f4f4f5;
+    --card-muted-fg: #71717a;
+    --card-border: #27272a;
+
+    --card-inverted-bg: #f4f4f5;
+    --card-inverted-fg: #18181b;
+    --card-inverted-muted-fg: #71717a;
+    --card-inverted-border: rgba(0, 0, 0, 0.1);
+
+    --input-bg: #27272a;
+    --input-fg: #f4f4f5;
+    --input-muted-fg: #71717a;
+    --input-border: #3f3f46;
+
+    --muted-bg: #27272a;
+    --muted-fg: #f4f4f5;
+    --muted-muted-fg: #71717a;
+    --muted-border: #3f3f46;
+
+    --focus-ring: #f4f4f5;
+
+    --danger: #ef4444;
+    --danger-fg: #ffffff;
+    --danger-muted-bg: rgba(239, 68, 68, 0.15);
+    --danger-muted-fg: #f87171;
+
+    --success: #22c55e;
+    --success-fg: #052e13;
+    --success-muted-bg: rgba(34, 197, 94, 0.15);
+    --success-muted-fg: #4ade80;
+  }
+}
+
+@theme inline {
+  --color-page-bg: var(--page-bg);
+  --color-page-fg: var(--page-fg);
+
+  --color-card-bg: var(--card-bg);
+  --color-card-fg: var(--card-fg);
+  --color-card-muted-fg: var(--card-muted-fg);
+  --color-card-border: var(--card-border);
+
+  --color-card-inverted-bg: var(--card-inverted-bg);
+  --color-card-inverted-fg: var(--card-inverted-fg);
+  --color-card-inverted-muted-fg: var(--card-inverted-muted-fg);
+  --color-card-inverted-border: var(--card-inverted-border);
+
+  --color-input-bg: var(--input-bg);
+  --color-input-fg: var(--input-fg);
+  --color-input-muted-fg: var(--input-muted-fg);
+  --color-input-border: var(--input-border);
+
+  --color-muted-bg: var(--muted-bg);
+  --color-muted-fg: var(--muted-fg);
+  --color-muted-muted-fg: var(--muted-muted-fg);
+  --color-muted-border: var(--muted-border);
+
+  --color-focus-ring: var(--focus-ring);
+
+  --color-danger: var(--danger);
+  --color-danger-fg: var(--danger-fg);
+  --color-danger-muted-bg: var(--danger-muted-bg);
+  --color-danger-muted-fg: var(--danger-muted-fg);
+
+  --color-success: var(--success);
+  --color-success-fg: var(--success-fg);
+  --color-success-muted-bg: var(--success-muted-bg);
+  --color-success-muted-fg: var(--success-muted-fg);
+
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+/*
+ * Surface classes pair a background with its foreground so a component can
+ * never state one without the other — the mechanism behind ff62a5f (light
+ * text left over a hardcoded light background) is structurally impossible
+ * once a surface is applied as a single class.
+ */
+@layer components {
+  .surface-page {
+    background-color: var(--page-bg);
+    color: var(--page-fg);
+  }
+
+  .surface-card {
+    background-color: var(--card-bg);
+    color: var(--card-fg);
+    border-color: var(--card-border);
+  }
+
+  .surface-card-inverted {
+    background-color: var(--card-inverted-bg);
+    color: var(--card-inverted-fg);
+    border-color: var(--card-inverted-border);
+  }
+
+  .surface-input {
+    background-color: var(--input-bg);
+    color: var(--input-fg);
+  }
+
+  .surface-input::placeholder {
+    color: var(--input-muted-fg);
+  }
+
+  .surface-muted {
+    background-color: var(--muted-bg);
+    color: var(--muted-fg);
+    border-color: var(--muted-border);
+  }
+
+  .hide-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .hide-scrollbar {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background: var(--page-bg);
+  color: var(--page-fg);
 }

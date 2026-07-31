@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabaseClient';
 import { upsertWorkoutSession } from '../../lib/data/workoutSessions';
 import WorkoutView from '../../components/WorkoutView';
+import { useMessages } from '../../components/ui/MessageProvider';
 import { WorkoutSession } from '../../types';
 
 interface WorkoutSessionClientProps {
@@ -13,6 +14,7 @@ interface WorkoutSessionClientProps {
 
 export default function WorkoutSessionClient({ initialSession }: WorkoutSessionClientProps) {
   const router = useRouter();
+  const { showMessage } = useMessages();
   const [activeSession, setActiveSession] = useState(initialSession);
 
   const updateSessionDate = (date: string) => {
@@ -28,18 +30,18 @@ export default function WorkoutSessionClient({ initialSession }: WorkoutSessionC
 
   const handleSave = async () => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      alert("Supabase connection is missing — no save was attempted.");
+      showMessage('error', 'Supabase connection is missing — no save was attempted.');
       return;
     }
 
     const result = await upsertWorkoutSession(supabase, activeSession);
     if (!result.ok) {
       console.error(result.error);
-      alert("Error saving to database!");
+      showMessage('error', 'Error saving to database!');
       return;
     }
 
-    alert("Workout saved!");
+    showMessage('success', 'Workout saved!');
     router.back();
   };
 

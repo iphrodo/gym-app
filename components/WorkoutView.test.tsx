@@ -3,17 +3,17 @@ import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import WorkoutView from './WorkoutView';
 import { WorkoutSession } from '../types';
 
-// The real values for the two Tailwind classes under test (zinc-50 / zinc-900).
-// `.bg-zinc-50` also sets a matching text color as a deliberately illegible
-// baseline, so `.text-zinc-900` is what has to win for the input to be readable.
-const ZINC_INPUT_COLORS_CSS = `
-  .bg-zinc-50 { background-color: #fafafa; color: #fafafa; }
-  .text-zinc-900 { color: #18181b; }
+// The real light-theme values of the `.surface-input` token class under test
+// (see app/globals.css). A surface class pairs background and foreground in
+// one rule, so there is no separate "text color" class whose omission could
+// reproduce ff62a5f — this asserts the pairing actually renders as contrast.
+const SURFACE_INPUT_COLORS_CSS = `
+  .surface-input { background-color: #fafafa; color: #18181b; }
 `;
 
 beforeAll(() => {
   const style = document.createElement('style');
-  style.textContent = ZINC_INPUT_COLORS_CSS;
+  style.textContent = SURFACE_INPUT_COLORS_CSS;
   document.head.appendChild(style);
 });
 

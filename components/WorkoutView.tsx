@@ -3,6 +3,10 @@
 import React, { useState } from 'react';
 import { WorkoutSession } from '../types';
 import { parseWeight } from '../lib/exerciseValues';
+import { Screen, ScreenHeader } from './ui/Screen';
+import Card from './ui/Card';
+import Button from './ui/Button';
+import Field, { fieldInputClassName } from './ui/Field';
 
 interface WorkoutViewProps {
   activeSession: WorkoutSession;
@@ -12,11 +16,11 @@ interface WorkoutViewProps {
   onUpdateExercise: (name: string, field: 'weight' | 'reps' | 'comment', value: string) => void;
 }
 
-export default function WorkoutView({ 
-  activeSession, 
-  onCancel, 
-  onSave, 
-  onUpdateDate, 
+export default function WorkoutView({
+  activeSession,
+  onCancel,
+  onSave,
+  onUpdateDate,
   onUpdateExercise
 }: WorkoutViewProps) {
   const [invalidWeightDrafts, setInvalidWeightDrafts] = useState<Record<string, string>>({});
@@ -37,80 +41,75 @@ export default function WorkoutView({
   };
 
   return (
-    <main className="min-h-screen bg-zinc-50 p-6 font-sans">
-      <div className="max-w-md mx-auto">
-        <header className="flex items-center justify-between mb-8">
-          <button onClick={onCancel} className="text-zinc-400 font-bold hover:text-zinc-900">
+    <Screen>
+      <ScreenHeader
+        left={
+          <button onClick={onCancel} className="text-card-muted-fg font-bold hover:text-page-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded">
             ← Cancel
           </button>
-          <div className="text-center">
-            <h2 className="font-black text-zinc-900">Day {activeSession.dayNumber}</h2>
-            <p className="text-[10px] text-zinc-500 uppercase font-bold tracking-widest">{activeSession.dayLabel}</p>
-          </div>
-          <div className="w-20"></div>
-        </header>
+        }
+        title={`Day ${activeSession.dayNumber}`}
+        subtitle={activeSession.dayLabel}
+      />
 
-        <div className="bg-white p-6 rounded-[2.2rem] shadow-sm border border-zinc-100 mb-6 focus-within:ring-2 focus-within:ring-zinc-900 transition-all">
-          <label htmlFor="workout-date" className="block text-[10px] uppercase font-black text-zinc-400 tracking-wider mb-2">Workout date</label>
+      <Card rounded="md" interactive className="mb-6">
+        <Field label="Workout date" htmlFor="workout-date">
           <input
             id="workout-date"
             type="date"
             value={activeSession.date}
             onChange={(e) => onUpdateDate(e.target.value)}
-            className="w-full bg-zinc-50 py-3 px-4 rounded-xl outline-none font-bold text-zinc-900"
+            className={fieldInputClassName()}
           />
-        </div>
+        </Field>
+      </Card>
 
-        <div className="space-y-4">
-          {activeSession.data.map((exercise, index) => (
-            <div key={index} className="bg-white p-6 rounded-[2.2rem] shadow-sm border border-zinc-100 focus-within:ring-2 focus-within:ring-zinc-900 transition-all">
-              <h3 className="font-bold text-zinc-800 mb-4">{exercise.name}</h3>
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={invalidWeightDrafts[exercise.name] ?? exercise.weight}
-                    onChange={(e) => handleWeightChange(exercise.name, e.target.value)}
-                    placeholder="0.0"
-                    aria-label={`${exercise.name} weight`}
-                    aria-invalid={exercise.name in invalidWeightDrafts}
-                    className={`w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900 ${exercise.name in invalidWeightDrafts ? 'ring-2 ring-red-400' : ''}`}
-                  />
-                  <span className="absolute right-6 top-1/2 -translate-y-1/2 text-zinc-400 font-bold">kg</span>
-                </div>
-                <div className="relative">
-                  <input
-                    type="text"
-                    inputMode="decimal"
-                    value={exercise.reps}
-                    onChange={(e) => onUpdateExercise(exercise.name, 'reps', e.target.value)}
-                    placeholder="Num of reps"
-                    aria-label={`${exercise.name} reps`}
-                    className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900"
-                  />
-                </div>
+      <div className="space-y-4">
+        {activeSession.data.map((exercise, index) => (
+          <Card key={index} rounded="md" interactive>
+            <h3 className="font-bold mb-4">{exercise.name}</h3>
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={invalidWeightDrafts[exercise.name] ?? exercise.weight}
+                  onChange={(e) => handleWeightChange(exercise.name, e.target.value)}
+                  placeholder="0.0"
+                  aria-label={`${exercise.name} weight`}
+                  aria-invalid={exercise.name in invalidWeightDrafts}
+                  className={`${fieldInputClassName(exercise.name in invalidWeightDrafts)} text-xl`}
+                />
+                <span className="absolute right-6 top-1/2 -translate-y-1/2 text-card-muted-fg font-bold">kg</span>
               </div>
-              <div className="flex mt-4">
-                  <textarea
-                    value={exercise.comment}
-                    onChange={(e) => onUpdateExercise(exercise.name, 'comment', e.target.value)}
-                    placeholder="Comment"
-                    aria-label={`${exercise.name} comment`}
-                    className="w-full bg-zinc-50 py-4 px-6 rounded-2xl outline-none font-black text-xl text-zinc-900"
-                  />
-                </div>
+              <div className="relative">
+                <input
+                  type="text"
+                  inputMode="decimal"
+                  value={exercise.reps}
+                  onChange={(e) => onUpdateExercise(exercise.name, 'reps', e.target.value)}
+                  placeholder="Num of reps"
+                  aria-label={`${exercise.name} reps`}
+                  className={`${fieldInputClassName()} text-xl`}
+                />
+              </div>
             </div>
-          ))}
-        </div>
-
-        <button 
-          onClick={onSave}
-          className="w-full mt-10 bg-zinc-900 text-white py-5 rounded-[2rem] font-black text-xl shadow-xl shadow-zinc-300 hover:-translate-y-1 hover:shadow-2xl active:scale-95 transition-all duration-300"
-        >
-          Save results
-        </button>
+            <div className="flex mt-4">
+              <textarea
+                value={exercise.comment}
+                onChange={(e) => onUpdateExercise(exercise.name, 'comment', e.target.value)}
+                placeholder="Comment"
+                aria-label={`${exercise.name} comment`}
+                className={`${fieldInputClassName()} text-xl`}
+              />
+            </div>
+          </Card>
+        ))}
       </div>
-    </main>
+
+      <Button onClick={onSave} className="w-full mt-10 shadow-card-inverted-bg/20 hover:-translate-y-1 hover:shadow-2xl">
+        Save results
+      </Button>
+    </Screen>
   );
 }
