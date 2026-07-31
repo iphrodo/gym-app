@@ -1,15 +1,16 @@
 "use client";
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { DayTemplate, TrainingCycle } from '../types';
 
 interface CycleFormViewProps {
   initialCycle?: TrainingCycle;
-  onBack: () => void;
+  backHref: string;
   onSaveCycle: (cycle: TrainingCycle) => void;
 }
 
-export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: CycleFormViewProps) {
+export default function CycleFormView({ initialCycle, backHref, onSaveCycle }: CycleFormViewProps) {
   const isEditing = !!initialCycle;
   const [cycleName, setCycleName] = useState(initialCycle?.name || "");
   const [cycleDays, setCycleDays] = useState<DayTemplate[]>(
@@ -40,9 +41,9 @@ export default function CycleFormView({ initialCycle, onBack, onSaveCycle }: Cyc
     <main className="min-h-screen bg-zinc-50 p-6 font-sans pb-24">
       <div className="max-w-md mx-auto">
         <header className="flex items-center justify-between mb-8">
-          <button onClick={onBack} className="text-zinc-400 font-bold hover:text-zinc-900">
+          <Link href={backHref} className="text-zinc-400 font-bold hover:text-zinc-900">
             ← Back
-          </button>
+          </Link>
           <h2 className="font-black text-zinc-900">{isEditing ? "Edit cycle" : "New cycle"}</h2>
           <div className="w-16"></div>
         </header>

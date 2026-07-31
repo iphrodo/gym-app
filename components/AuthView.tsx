@@ -1,9 +1,15 @@
 "use client";
 
 import React, { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '../lib/supabaseClient';
 
-export default function AuthView() {
+interface AuthViewProps {
+  redirectTo?: string;
+}
+
+export default function AuthView({ redirectTo = '/' }: AuthViewProps) {
+  const router = useRouter();
   const [isLogin, setIsLogin] = useState(true);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -15,7 +21,12 @@ export default function AuthView() {
 
     if (isLogin) {
       const { error } = await supabase.auth.signInWithPassword({ email, password });
-      if (error) alert("Login error: " + error.message);
+      if (error) {
+        alert("Login error: " + error.message);
+      } else {
+        router.replace(redirectTo);
+        router.refresh();
+      }
     } else {
       const { error } = await supabase.auth.signUp({ email, password });
       if (error) alert("Registration error: " + error.message);

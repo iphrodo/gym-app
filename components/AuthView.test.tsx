@@ -5,6 +5,8 @@ import AuthView from './AuthView';
 const signInWithPassword = vi.fn();
 const signUp = vi.fn();
 const signOut = vi.fn();
+const replace = vi.fn();
+const refresh = vi.fn();
 
 vi.mock('../lib/supabaseClient', () => ({
   supabase: {
@@ -14,6 +16,10 @@ vi.mock('../lib/supabaseClient', () => ({
       signOut: (...args: unknown[]) => signOut(...args),
     },
   },
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ replace, refresh }),
 }));
 
 afterEach(() => {
@@ -34,6 +40,21 @@ describe('AuthView', () => {
     await waitFor(() => {
       expect(signInWithPassword).toHaveBeenCalledWith({ email: 'me@example.com', password: 'secret1' });
     });
+  });
+
+  it('returns to the requested screen after a successful login', async () => {
+    signInWithPassword.mockResolvedValue({ error: null });
+
+    render(<AuthView redirectTo="/cycles/c1" />);
+
+    fireEvent.change(screen.getByPlaceholderText('athlete@example.com'), { target: { value: 'me@example.com' } });
+    fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'secret1' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
+
+    await waitFor(() => {
+      expect(replace).toHaveBeenCalledWith('/cycles/c1');
+    });
+    expect(refresh).toHaveBeenCalled();
   });
 
   it('submits the entered credentials on sign-up', async () => {

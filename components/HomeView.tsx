@@ -1,4 +1,7 @@
+"use client";
+
 import React from 'react';
+import Link from 'next/link';
 import { TrainingCycle, WorkoutSession } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { sortHistoryNewestFirst } from '../lib/sortWorkoutHistory';
@@ -6,15 +9,19 @@ import { sortHistoryNewestFirst } from '../lib/sortWorkoutHistory';
 interface HomeViewProps {
   cycles: TrainingCycle[];
   history: WorkoutSession[];
-  onSelectCycle: (id: string) => void;
-  onNewCycle: () => void;
   onDeleteCycle: (id: string) => void;
-  onEditSession: (session: WorkoutSession) => void;
-  onOpenCalendar: () => void;
 }
 
-export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, onDeleteCycle, onEditSession, onOpenCalendar }: HomeViewProps) {
+export default function HomeView({ cycles, history, onDeleteCycle }: HomeViewProps) {
   const recentHistory = sortHistoryNewestFirst(history).slice(0, 3);
+
+  const handleLogOut = async () => {
+    await supabase.auth.signOut();
+    // A hard navigation clears every Activity-preserved route so a
+    // subsequently signed-in account can never see this account's data.
+    window.location.assign('/login');
+  };
+
   return (
     <main className="min-h-screen bg-zinc-50 p-6 font-sans">
       <div className="max-w-md mx-auto">
@@ -24,16 +31,16 @@ export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, o
             <p className="text-zinc-500 font-medium tracking-tight">Your workout journal</p>
           </div>
           <div className="flex items-center gap-2">
-            <button
-              onClick={onOpenCalendar}
+            <Link
+              href="/calendar"
               aria-label="Open calendar"
               title="Open calendar"
               className="text-zinc-500 bg-white border border-zinc-200 p-2.5 rounded-xl hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
             >
               <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
-            </button>
+            </Link>
             <button
-              onClick={() => supabase.auth.signOut()}
+              onClick={handleLogOut}
               className="text-[10px] font-black uppercase tracking-wider text-zinc-500 bg-white border border-zinc-200 px-3 py-1.5 rounded-xl hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
             >
               Log out
@@ -50,17 +57,17 @@ export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, o
                   <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
                     <h4 className="font-black text-lg leading-tight w-1/2">{session.dayLabel}</h4>
                     <span className="text-[10px] font-black text-zinc-400 bg-white/10 px-3 py-1.5 rounded-full uppercase tracking-wider">{session.date}</span>
-                    <button
-                      onClick={() => onEditSession(session)}
+                    <Link
+                      href={`/workouts/${session.id}`}
                       className="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 p-2 rounded-full transition-colors"
                       aria-label="Edit workout"
                       title="Edit workout"
                     >
                       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </button>
+                    </Link>
                   </div>
                   <div className="space-y-3">
-                    {session.data.filter(d => d.weight).length > 0 
+                    {session.data.filter(d => d.weight).length > 0
                       ? session.data.filter(d => d.weight).map((ex, i) => (
                         <div key={i} className="flex justify-between items-center text-sm border-b border-white/5 pb-2 last:border-0 last:pb-0">
                           <span className="text-zinc-400 truncate pr-4 text-xs font-bold leading-tight">{ex.name}</span>
@@ -73,7 +80,7 @@ export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, o
                 </div>
               ))}
             </div>
-            
+
             {/* Minimal inline CSS to hide scrollbar while keeping functionality */}
             <style jsx>{`
               .hide-scrollbar::-webkit-scrollbar {
@@ -116,23 +123,23 @@ export default function HomeView({ cycles, history, onSelectCycle, onNewCycle, o
 
               <div className="flex items-center justify-between">
                 <p className="text-sm text-zinc-500 font-medium">{cycle.templates.length} workout days</p>
-                <button 
-                  onClick={() => onSelectCycle(cycle.id)}
+                <Link
+                  href={`/cycles/${cycle.id}`}
                   className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-2xl text-sm font-bold transition-colors"
                 >
                   Open
-                </button>
+                </Link>
               </div>
             </div>
           ))}
         </div>
 
-        <button 
-          onClick={onNewCycle}
-          className="w-full mt-6 py-5 border-2 border-dashed border-zinc-300 rounded-[2rem] text-zinc-400 font-bold hover:bg-zinc-100 hover:text-zinc-600 transition-all text-lg"
+        <Link
+          href="/cycles/new"
+          className="block text-center w-full mt-6 py-5 border-2 border-dashed border-zinc-300 rounded-[2rem] text-zinc-400 font-bold hover:bg-zinc-100 hover:text-zinc-600 transition-all text-lg"
         >
           + New cycle
-        </button>
+        </Link>
       </div>
     </main>
   );

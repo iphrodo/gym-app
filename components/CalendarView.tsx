@@ -1,23 +1,28 @@
 "use client";
 
-import React, { useMemo, useState } from 'react';
+import React, { useLayoutEffect, useMemo, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { WorkoutSession } from '../types';
 import { buildCalendarMonth, todayDateKey } from '../lib/calendarMonth';
 
 interface CalendarViewProps {
   history: WorkoutSession[];
-  onEditSession: (session: WorkoutSession) => void;
-  onBack: () => void;
 }
 
 const WEEKDAY_LABELS = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
-export default function CalendarView({ history, onEditSession, onBack }: CalendarViewProps) {
+export default function CalendarView({ history }: CalendarViewProps) {
+  const router = useRouter();
   const todayKey = todayDateKey();
   const [todayYear, todayMonthNum] = todayKey.split('-').map(Number);
   const [year, setYear] = useState(todayYear);
   const [month, setMonth] = useState(todayMonthNum - 1); // 0-indexed
   const [pendingDateKey, setPendingDateKey] = useState<string | null>(null);
+
+  // Cache Components preserves this route's state and DOM across
+  // navigation; without this cleanup the picker would reappear open on return.
+  useLayoutEffect(() => () => setPendingDateKey(null), []);
 
   const calendarMonth = useMemo(
     () => buildCalendarMonth(year, month, history, todayKey),
@@ -47,7 +52,7 @@ export default function CalendarView({ history, onEditSession, onBack }: Calenda
   const handleDayClick = (date: string, sessions: WorkoutSession[]) => {
     if (sessions.length === 0) return;
     if (sessions.length === 1) {
-      onEditSession(sessions[0]);
+      router.push(`/workouts/${sessions[0].id}`);
       return;
     }
     setPendingDateKey(date);
@@ -61,9 +66,9 @@ export default function CalendarView({ history, onEditSession, onBack }: Calenda
     <main className="min-h-screen bg-zinc-50 p-6 font-sans">
       <div className="max-w-md mx-auto">
         <header className="flex items-center justify-between mb-8">
-          <button onClick={onBack} className="text-zinc-400 font-bold hover:text-zinc-900">
+          <Link href="/" className="text-zinc-400 font-bold hover:text-zinc-900">
             ← Back
-          </button>
+          </Link>
           <h2 className="font-black text-zinc-900">Calendar</h2>
           <div className="w-16"></div>
         </header>
@@ -137,17 +142,14 @@ export default function CalendarView({ history, onEditSession, onBack }: Calenda
             <h4 className="font-black text-zinc-900 mb-4">{pendingDateKey}</h4>
             <div className="space-y-2">
               {pendingSessions.map(session => (
-                <button
+                <Link
                   key={session.id}
-                  onClick={() => {
-                    setPendingDateKey(null);
-                    onEditSession(session);
-                  }}
+                  href={`/workouts/${session.id}`}
                   className="w-full flex items-center justify-between bg-zinc-50 hover:bg-zinc-100 px-4 py-3 rounded-2xl text-left transition-colors"
                 >
                   <span className="font-bold text-zinc-800 text-sm">{session.dayLabel}</span>
                   <span className="text-zinc-400 text-xs">→</span>
-                </button>
+                </Link>
               ))}
             </div>
             <button

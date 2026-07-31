@@ -31,9 +31,17 @@ function buildSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
   };
 }
 
-function noop() {}
-
 describe('StatsView', () => {
+  it('links back to the cycle and to each session for editing', () => {
+    const cycle = buildCycle();
+    const history = [buildSession({ data: [{ name: 'Bench press', weight: '80', reps: '5', comment: '' }] })];
+
+    render(<StatsView cycle={cycle} history={history} />);
+
+    expect(screen.getByRole('link', { name: '← Back' })).toHaveAttribute('href', '/cycles/cycle-1');
+    expect(screen.getByLabelText('Edit workout')).toHaveAttribute('href', '/workouts/session-1');
+  });
+
   it('excludes exercises with no recorded weight', () => {
     const cycle = buildCycle();
     const history = [
@@ -45,7 +53,7 @@ describe('StatsView', () => {
       }),
     ];
 
-    render(<StatsView cycle={cycle} history={history} onBack={noop} onEditSession={noop} />);
+    render(<StatsView cycle={cycle} history={history} />);
 
     expect(screen.getByText('Bench press')).toBeInTheDocument();
     expect(screen.queryByText('Squat')).not.toBeInTheDocument();
@@ -68,7 +76,7 @@ describe('StatsView', () => {
       }),
     ];
 
-    render(<StatsView cycle={cycle} history={history} onBack={noop} onEditSession={noop} />);
+    render(<StatsView cycle={cycle} history={history} />);
 
     const svg = document.querySelector('svg');
     const circles = svg?.querySelectorAll('circle') ?? [];
@@ -82,7 +90,7 @@ describe('StatsView', () => {
 
   it('renders the empty state when nothing qualifies', () => {
     const cycle = buildCycle();
-    render(<StatsView cycle={cycle} history={[]} onBack={noop} onEditSession={noop} />);
+    render(<StatsView cycle={cycle} history={[]} />);
 
     expect(screen.getByText('No results recorded for statistics yet.')).toBeInTheDocument();
   });

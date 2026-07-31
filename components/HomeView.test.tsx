@@ -56,17 +56,7 @@ describe('HomeView', () => {
       buildCycle({ id: 'c2', name: 'Inactive cycle', isActive: false, templates: [{ dayNumber: 1, label: 'Full body', exercises: [] }] }),
     ];
 
-    render(
-      <HomeView
-        cycles={cycles}
-        history={[]}
-        onSelectCycle={noop}
-        onNewCycle={noop}
-        onDeleteCycle={noop}
-        onEditSession={noop}
-        onOpenCalendar={noop}
-      />
-    );
+    render(<HomeView cycles={cycles} history={[]} onDeleteCycle={noop} />);
 
     const activeCard = screen.getByText('Active cycle').parentElement!.parentElement!.parentElement!;
     expect(within(activeCard).getByText('Active')).toBeInTheDocument();
@@ -75,6 +65,15 @@ describe('HomeView', () => {
     const inactiveCard = screen.getByText('Inactive cycle').parentElement!.parentElement!.parentElement!;
     expect(within(inactiveCard).queryByText('Active')).not.toBeInTheDocument();
     expect(within(inactiveCard).getByText('1 workout days')).toBeInTheDocument();
+  });
+
+  it('links each cycle to its detail route', () => {
+    const cycles = [buildCycle({ id: 'c1' })];
+    render(<HomeView cycles={cycles} history={[]} onDeleteCycle={noop} />);
+
+    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/cycles/c1');
+    expect(screen.getByRole('link', { name: '+ New cycle' })).toHaveAttribute('href', '/cycles/new');
+    expect(screen.getByRole('link', { name: 'Open calendar' })).toHaveAttribute('href', '/calendar');
   });
 
   it('shows only exercises with a recorded weight in recent workouts', () => {
@@ -87,20 +86,11 @@ describe('HomeView', () => {
       }),
     ];
 
-    render(
-      <HomeView
-        cycles={[]}
-        history={history}
-        onSelectCycle={noop}
-        onNewCycle={noop}
-        onDeleteCycle={noop}
-        onEditSession={noop}
-        onOpenCalendar={noop}
-      />
-    );
+    render(<HomeView cycles={[]} history={history} onDeleteCycle={noop} />);
 
     expect(screen.getByText('Bench press')).toBeInTheDocument();
     expect(screen.queryByText('Overhead press')).not.toBeInTheDocument();
+    expect(screen.getByLabelText('Edit workout')).toHaveAttribute('href', '/workouts/session-1');
   });
 
   it('prompts for confirmation before deleting a cycle', () => {
@@ -108,17 +98,7 @@ describe('HomeView', () => {
     const onDeleteCycle = vi.fn();
     const cycles = [buildCycle({ id: 'c1' })];
 
-    render(
-      <HomeView
-        cycles={cycles}
-        history={[]}
-        onSelectCycle={noop}
-        onNewCycle={noop}
-        onDeleteCycle={onDeleteCycle}
-        onEditSession={noop}
-        onOpenCalendar={noop}
-      />
-    );
+    render(<HomeView cycles={cycles} history={[]} onDeleteCycle={onDeleteCycle} />);
 
     fireEvent.click(screen.getByLabelText('Delete cycle'));
 
@@ -132,21 +112,20 @@ describe('HomeView', () => {
     confirmSpy.mockRestore();
   });
 
-  it('calls signOut when logging out', () => {
-    render(
-      <HomeView
-        cycles={[]}
-        history={[]}
-        onSelectCycle={noop}
-        onNewCycle={noop}
-        onDeleteCycle={noop}
-        onEditSession={noop}
-        onOpenCalendar={noop}
-      />
-    );
+  it('signs out and navigates to the sign-in screen when logging out', async () => {
+    const assignSpy = vi.fn();
+    vi.stubGlobal('location', { ...window.location, assign: assignSpy });
+    signOut.mockResolvedValue({ error: null });
+
+    render(<HomeView cycles={[]} history={[]} onDeleteCycle={noop} />);
 
     fireEvent.click(screen.getByText('Log out'));
 
-    expect(signOut).toHaveBeenCalled();
+    await vi.waitFor(() => {
+      expect(signOut).toHaveBeenCalled();
+      expect(assignSpy).toHaveBeenCalledWith('/login');
+    });
+
+    vi.unstubAllGlobals();
   });
 });
