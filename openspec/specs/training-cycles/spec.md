@@ -32,7 +32,7 @@ A user SHALL be able to create a new training cycle with a name and one or more 
 - **THEN** blank rows are stripped before saving so only non-empty exercise names persist
 
 ### Requirement: Edit Cycle
-A user SHALL be able to edit an existing cycle's name and day templates.
+A user SHALL be able to edit an existing cycle's name and day templates. Edits SHALL be held in the form and applied to the app's data only on save.
 
 #### Scenario: Save edits
 - **WHEN** the user opens an existing cycle for editing, changes its name and/or day templates, and saves
@@ -45,6 +45,14 @@ A user SHALL be able to edit an existing cycle's name and day templates.
 #### Scenario: Add or remove an exercise
 - **WHEN** the user clicks "Add exercise" or the "×" button next to an exercise row within a day
 - **THEN** that day's exercise list gains or loses that entry before save
+
+#### Scenario: Abandoning an edit discards it
+- **WHEN** the user edits a cycle's name, day labels, or exercises and then leaves the form without saving
+- **THEN** the cycle is unchanged everywhere in the app, including after navigating back into it
+
+#### Scenario: Editing does not disturb other cycles
+- **WHEN** the user edits one cycle's day templates
+- **THEN** no other cycle's templates are altered, whether or not the edit is saved
 
 ### Requirement: Single Active Cycle
 At most one of a user's training cycles SHALL be marked active at a time. Activation state is per-account: marking one cycle active SHALL NOT affect any other account's cycles.
@@ -73,7 +81,15 @@ The app SHALL show, for a selected cycle, its workout count, elapsed days, day t
 
 #### Scenario: Viewing an active cycle with history
 - **WHEN** the user opens a cycle that has logged workout sessions
-- **THEN** the detail view shows the total session count, days elapsed since the first session, each day template as a "Start" action, and past sessions newest-first with per-session completion count ("N / total exercises logged")
+- **THEN** the detail view shows the total session count, days elapsed since the earliest session, each day template as a "Start" action, and past sessions newest-first with per-session completion count ("N / total exercises logged")
+
+#### Scenario: Elapsed days uses the earliest session
+- **WHEN** a cycle's sessions are held in an arbitrary order
+- **THEN** elapsed days is measured from the chronologically earliest session, not from whichever session happens to be first in the list
+
+#### Scenario: Cycle with no history
+- **WHEN** the user opens a cycle that has no logged sessions
+- **THEN** the elapsed-days figure reads zero rather than a value derived from an absent record
 
 ### Requirement: Home Dashboard Cycle List
 The home dashboard SHALL list all of the user's training cycles with their active status, day count, and entry points to open, create, or delete a cycle.

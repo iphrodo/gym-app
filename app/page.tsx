@@ -5,6 +5,7 @@ import { Session } from '@supabase/supabase-js';
 import { TrainingCycle, WorkoutSession, DayTemplate } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { requireUserId } from '../lib/auth';
+import { normalizeExerciseSet } from '../lib/exerciseValues';
 import AuthView from '../components/AuthView';
 import HomeView from '../components/HomeView';
 import CycleView from '../components/CycleView';
@@ -14,7 +15,7 @@ import StatsView from '../components/StatsView';
 import { resolveWorkoutOrigin, WorkoutOrigin } from '../lib/workoutOrigin';
 import CalendarView from '../components/CalendarView';
 
-const DEFAULT_CYCLE_TEMPLATE: Omit<TrainingCycle, 'userId'> = {
+const DEFAULT_CYCLE_TEMPLATE: Omit<TrainingCycle, 'userId' | 'createdAt'> = {
   id: "cycle-2024-v1",
   name: "Power Cycle v1",
   isActive: true,
@@ -43,6 +44,8 @@ export default function GymApp() {
   const [session, setSession] = useState<Session | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const [view, setView] = useState<'home' | 'cycle' | 'new_cycle' | 'edit_cycle' | 'workout' | 'stats' | 'calendar'>('home');
   const [previousView, setPreviousView] = useState<WorkoutOrigin>('cycle');
   const [history, setHistory] = useState<WorkoutSession[]>([]);
@@ -69,6 +72,7 @@ export default function GymApp() {
         setSelectedCycleId(null);
         setActiveSession(null);
         setIsLoaded(false);
+        setLoadError(null);
         setView('home');
       }
     });
@@ -82,27 +86,42 @@ export default function GymApp() {
       const userId = requireUserId(session);
       if (!userId) return;
 
+      setLoadError(null);
+
       const { data: cyclesData, error: cyclesError } = await supabase
         .from('cycles')
         .select('*')
         .eq('user_id', userId);
+      if (cyclesError) {
+        console.error(cyclesError);
+        setLoadError("Couldn't load your cycles.");
+        return;
+      }
+
       if (cyclesData && cyclesData.length > 0) {
         setCycles(cyclesData.map(c => ({
           id: c.id,
           name: c.name,
           isActive: c.is_active,
           templates: c.templates,
-          userId: c.user_id
+          userId: c.user_id,
+          createdAt: c.created_at
         })));
       } else {
-        const defaultCycle: TrainingCycle = { ...DEFAULT_CYCLE_TEMPLATE, userId };
-        await supabase.from('cycles').insert([{
+        const defaultCycle: TrainingCycle = { ...DEFAULT_CYCLE_TEMPLATE, userId, createdAt: new Date().toISOString() };
+        const { error: insertError } = await supabase.from('cycles').insert([{
            id: defaultCycle.id,
            name: defaultCycle.name,
            is_active: defaultCycle.isActive,
            templates: defaultCycle.templates,
-           user_id: userId
+           user_id: userId,
+           created_at: defaultCycle.createdAt
         }]);
+        if (insertError) {
+          console.error(insertError);
+          setLoadError("Couldn't set up your account.");
+          return;
+        }
         setCycles([defaultCycle]);
       }
 
@@ -110,23 +129,28 @@ export default function GymApp() {
         .from('workout_sessions')
         .select('*')
         .eq('user_id', userId);
-      if (historyData) {
-        setHistory(historyData.map(h => ({
-          id: h.id,
-          cycleId: h.cycle_id,
-          date: h.date,
-          dayLabel: h.day_label,
-          dayNumber: h.day_number,
-          data: h.data,
-          userId: h.user_id
-        })));
+      if (historyError) {
+        console.error(historyError);
+        setLoadError("Couldn't load your workout history.");
+        return;
       }
+
+      setHistory((historyData || []).map(h => ({
+        id: h.id,
+        cycleId: h.cycle_id,
+        date: h.date,
+        dayLabel: h.day_label,
+        dayNumber: h.day_number,
+        data: (h.data as WorkoutSession['data']).map(normalizeExerciseSet),
+        userId: h.user_id,
+        createdAt: h.created_at
+      })));
 
       setIsLoaded(true);
     };
 
     if (session) fetchData();
-  }, [session]);
+  }, [session, retryCount]);
 
   if (authLoading) {
     return <div className="min-h-screen bg-zinc-50 flex items-center justify-center font-sans font-black text-zinc-400">Checking session...</div>;
@@ -134,6 +158,20 @@ export default function GymApp() {
 
   if (!session) {
     return <AuthView />;
+  }
+
+  if (loadError) {
+    return (
+      <div className="min-h-screen bg-zinc-50 flex flex-col items-center justify-center gap-4 font-sans font-black text-zinc-400 text-center px-6">
+        <p>{loadError}</p>
+        <button
+          onClick={() => setRetryCount(c => c + 1)}
+          className="bg-zinc-900 text-white px-6 py-3 rounded-2xl font-black"
+        >
+          Retry
+        </button>
+      </div>
+    );
   }
 
   if (!isLoaded) {
@@ -150,13 +188,14 @@ export default function GymApp() {
     if (!userId) return alert("Your session has expired. Please log in again.");
 
     const newSession: WorkoutSession = {
-      id: Date.now().toString(),
+      id: crypto.randomUUID(),
       cycleId: selectedCycleId!,
       date: new Date().toISOString().split('T')[0], // format: YYYY-MM-DD
       dayLabel: template.label || `Day ${template.dayNumber}`,
       dayNumber: template.dayNumber,
-      data: template.exercises.map(name => ({ name, weight: "" })),
-      userId
+      data: template.exercises.map(name => normalizeExerciseSet({ name })),
+      userId,
+      createdAt: new Date().toISOString()
     };
     setActiveSession(newSession);
     setPreviousView(resolveWorkoutOrigin(view));
@@ -203,7 +242,8 @@ export default function GymApp() {
        day_label: activeSession.dayLabel,
        day_number: activeSession.dayNumber,
        data: activeSession.data,
-       user_id: userId
+       user_id: userId,
+       created_at: activeSession.createdAt
     });
 
     if (error) {
@@ -235,7 +275,8 @@ export default function GymApp() {
       name: newCycle.name,
       is_active: newCycle.isActive,
       templates: newCycle.templates,
-      user_id: userId
+      user_id: userId,
+      created_at: newCycle.createdAt
     });
 
     if (error) {
@@ -261,7 +302,11 @@ export default function GymApp() {
     if (!userId) return alert("Your session has expired. Please log in again.");
 
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      await supabase.from('cycles').delete().eq('id', id).eq('user_id', userId);
+      const { error } = await supabase.from('cycles').delete().eq('id', id).eq('user_id', userId);
+      if (error) {
+        console.error(error);
+        return alert("Error deleting cycle!");
+      }
     }
     setCycles(cycles.filter(c => c.id !== id));
     setHistory(history.filter(h => h.cycleId !== id)); // clean up history
@@ -276,7 +321,11 @@ export default function GymApp() {
     if (!userId) return alert("Your session has expired. Please log in again.");
 
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      await supabase.from('workout_sessions').delete().eq('id', sessionId).eq('user_id', userId);
+      const { error } = await supabase.from('workout_sessions').delete().eq('id', sessionId).eq('user_id', userId);
+      if (error) {
+        console.error(error);
+        return alert("Error deleting workout!");
+      }
     }
     setHistory(history.filter(h => h.id !== sessionId));
   };

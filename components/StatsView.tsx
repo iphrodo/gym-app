@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { TrainingCycle, WorkoutSession } from '../types';
+import { parseWeight } from '../lib/exerciseValues';
 
 interface StatsViewProps {
   cycle: TrainingCycle;
@@ -21,7 +22,7 @@ export default function StatsView({ cycle, history, onBack, onEditSession }: Sta
   // If we also want to display exercises mapped historically that are no longer in template
   history.forEach(session => {
     session.data.forEach(ex => {
-       if (ex.weight) {
+       if (parseWeight(ex.weight) !== null) {
          cycleExercises.add(ex.name);
        }
     });
@@ -36,8 +37,9 @@ export default function StatsView({ cycle, history, onBack, onEditSession }: Sta
 
   sortedHistory.forEach(session => {
     session.data.forEach(ex => {
-      if (ex.weight && exerciseStats[ex.name]) {
-        exerciseStats[ex.name].push({ date: session.date, weight: parseFloat(ex.weight), session });
+      const weight = parseWeight(ex.weight);
+      if (weight !== null && exerciseStats[ex.name]) {
+        exerciseStats[ex.name].push({ date: session.date, weight, session });
       }
     });
   });

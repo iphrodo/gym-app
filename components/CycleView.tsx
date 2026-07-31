@@ -16,8 +16,11 @@ interface CycleViewProps {
 }
 
 export default function CycleView({ selectedCycle, cycleHistory, onBack, onStartWorkout, onDeleteSession, onEditCycle, onViewStats, onEditSession }: CycleViewProps) {
-  const duration = cycleHistory.length > 0 
-    ? Math.ceil(Math.abs(new Date().getTime() - new Date(Number(cycleHistory[0].id)).getTime()) / (1000 * 60 * 60 * 24))
+  const earliestSessionTime = cycleHistory.length > 0
+    ? Math.min(...cycleHistory.map(s => new Date(s.date).getTime()))
+    : null;
+  const duration = earliestSessionTime !== null
+    ? Math.ceil(Math.abs(new Date().getTime() - earliestSessionTime) / (1000 * 60 * 60 * 24))
     : 0;
 
   return (
