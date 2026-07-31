@@ -16,7 +16,6 @@ function buildCycle(overrides: Partial<TrainingCycle> = {}): TrainingCycle {
       { dayNumber: 1, label: 'Push', exercises: ['Bench press', 'Overhead press'] },
       { dayNumber: 2, label: 'Pull', exercises: ['Deadlift'] },
     ],
-    userId: 'user-1',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
@@ -26,7 +25,7 @@ function noop() {}
 
 describe('CycleFormView', () => {
   it('adds a new day when "+ Add day" is clicked', () => {
-    render(<CycleFormView userId="user-1" onBack={noop} onSaveCycle={noop} />);
+    render(<CycleFormView onBack={noop} onSaveCycle={noop} />);
 
     expect(screen.queryByText('Day 2')).not.toBeInTheDocument();
     fireEvent.click(screen.getByText('+ Add day'));
@@ -36,7 +35,7 @@ describe('CycleFormView', () => {
 
   it('removes a day when "Delete day" is clicked', () => {
     const cycle = buildCycle();
-    render(<CycleFormView initialCycle={cycle} userId="user-1" onBack={noop} onSaveCycle={noop} />);
+    render(<CycleFormView initialCycle={cycle} onBack={noop} onSaveCycle={noop} />);
 
     expect(screen.getAllByText(/^Day \d$/)).toHaveLength(2);
     fireEvent.click(screen.getAllByText('Delete day')[0]);
@@ -48,7 +47,7 @@ describe('CycleFormView', () => {
     const cycle = buildCycle({
       templates: [{ dayNumber: 1, label: 'Push', exercises: ['Bench press'] }],
     });
-    render(<CycleFormView initialCycle={cycle} userId="user-1" onBack={noop} onSaveCycle={noop} />);
+    render(<CycleFormView initialCycle={cycle} onBack={noop} onSaveCycle={noop} />);
 
     expect(screen.getAllByPlaceholderText(/^Exercise \d/)).toHaveLength(1);
 
@@ -62,7 +61,7 @@ describe('CycleFormView', () => {
   it('refuses to save without a cycle name', () => {
     const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
     const onSaveCycle = vi.fn();
-    render(<CycleFormView userId="user-1" onBack={noop} onSaveCycle={onSaveCycle} />);
+    render(<CycleFormView onBack={noop} onSaveCycle={onSaveCycle} />);
 
     fireEvent.click(screen.getByText('Create cycle'));
 
@@ -76,7 +75,7 @@ describe('CycleFormView', () => {
     const cycle = buildCycle({
       templates: [{ dayNumber: 1, label: 'Push', exercises: ['Bench press', ''] }],
     });
-    render(<CycleFormView initialCycle={cycle} userId="user-1" onBack={noop} onSaveCycle={onSaveCycle} />);
+    render(<CycleFormView initialCycle={cycle} onBack={noop} onSaveCycle={onSaveCycle} />);
 
     fireEvent.click(screen.getByText('Save changes'));
 
@@ -91,7 +90,7 @@ describe('CycleFormView', () => {
     const cycle = buildCycle();
     const original = JSON.parse(JSON.stringify(cycle));
 
-    render(<CycleFormView initialCycle={cycle} userId="user-1" onBack={noop} onSaveCycle={noop} />);
+    render(<CycleFormView initialCycle={cycle} onBack={noop} onSaveCycle={noop} />);
 
     fireEvent.change(screen.getByDisplayValue('Push'), { target: { value: 'Changed label' } });
     fireEvent.change(screen.getByDisplayValue('Bench press'), { target: { value: 'Changed exercise' } });

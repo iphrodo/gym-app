@@ -29,7 +29,6 @@ function buildSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
     dayLabel: 'Push day',
     dayNumber: 1,
     data: [{ name: 'Bench press', weight: '', reps: '', comment: '' }],
-    userId: 'user-1',
     createdAt: '2026-07-01T00:00:00.000Z',
     ...overrides,
   };

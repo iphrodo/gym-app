@@ -29,7 +29,6 @@ function buildCycle(overrides: Partial<TrainingCycle> = {}): TrainingCycle {
       { dayNumber: 1, label: 'Push', exercises: ['Bench press'] },
       { dayNumber: 2, label: 'Pull', exercises: ['Deadlift'] },
     ],
-    userId: 'user-1',
     createdAt: '2026-01-01T00:00:00.000Z',
     ...overrides,
   };
@@ -43,7 +42,6 @@ function buildSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
     dayLabel: 'Push day',
     dayNumber: 1,
     data: [],
-    userId: 'user-1',
     createdAt: '2026-07-01T00:00:00.000Z',
     ...overrides,
   };
