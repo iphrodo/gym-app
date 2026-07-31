@@ -36,6 +36,11 @@ yarn-error.log*
 # vercel
 .vercel
 
+# supabase local backups (contain real user/auth data)
+/supabase/backups/
+# supabase CLI local state (machine-specific project link/connection info)
+/supabase/.temp/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts

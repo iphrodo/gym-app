@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { Session } from '@supabase/supabase-js';
 import { TrainingCycle, WorkoutSession, DayTemplate } from '../types';
 import { supabase } from '../lib/supabaseClient';
+import { requireUserId } from '../lib/auth';
 import AuthView from '../components/AuthView';
 import HomeView from '../components/HomeView';
 import CycleView from '../components/CycleView';
@@ -13,7 +14,7 @@ import StatsView from '../components/StatsView';
 import { resolveWorkoutOrigin, WorkoutOrigin } from '../lib/workoutOrigin';
 import CalendarView from '../components/CalendarView';
 
-const DEFAULT_CYCLE: TrainingCycle = {
+const DEFAULT_CYCLE_TEMPLATE: Omit<TrainingCycle, 'userId'> = {
   id: "cycle-2024-v1",
   name: "Power Cycle v1",
   isActive: true,
@@ -60,6 +61,16 @@ export default function GymApp() {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
+      if (!session) {
+        // Clear cached data on sign-out, token expiry, or session end from
+        // another tab, so one account's data never lingers for the next.
+        setCycles([]);
+        setHistory([]);
+        setSelectedCycleId(null);
+        setActiveSession(null);
+        setIsLoaded(false);
+        setView('home');
+      }
     });
 
     return () => subscription.unsubscribe();
@@ -68,27 +79,37 @@ export default function GymApp() {
   // --- Persistence Logic ---
   useEffect(() => {
     const fetchData = async () => {
-      if (!session) return; // Do not fetch unless user is logged in
-      
-      const { data: cyclesData, error: cyclesError } = await supabase.from('cycles').select('*');
+      const userId = requireUserId(session);
+      if (!userId) return;
+
+      const { data: cyclesData, error: cyclesError } = await supabase
+        .from('cycles')
+        .select('*')
+        .eq('user_id', userId);
       if (cyclesData && cyclesData.length > 0) {
         setCycles(cyclesData.map(c => ({
           id: c.id,
           name: c.name,
           isActive: c.is_active,
-          templates: c.templates
+          templates: c.templates,
+          userId: c.user_id
         })));
       } else {
+        const defaultCycle: TrainingCycle = { ...DEFAULT_CYCLE_TEMPLATE, userId };
         await supabase.from('cycles').insert([{
-           id: DEFAULT_CYCLE.id,
-           name: DEFAULT_CYCLE.name,
-           is_active: DEFAULT_CYCLE.isActive,
-           templates: DEFAULT_CYCLE.templates
+           id: defaultCycle.id,
+           name: defaultCycle.name,
+           is_active: defaultCycle.isActive,
+           templates: defaultCycle.templates,
+           user_id: userId
         }]);
-        setCycles([DEFAULT_CYCLE]);
+        setCycles([defaultCycle]);
       }
 
-      const { data: historyData, error: historyError } = await supabase.from('workout_sessions').select('*');
+      const { data: historyData, error: historyError } = await supabase
+        .from('workout_sessions')
+        .select('*')
+        .eq('user_id', userId);
       if (historyData) {
         setHistory(historyData.map(h => ({
           id: h.id,
@@ -96,7 +117,8 @@ export default function GymApp() {
           date: h.date,
           dayLabel: h.day_label,
           dayNumber: h.day_number,
-          data: h.data
+          data: h.data,
+          userId: h.user_id
         })));
       }
 
@@ -124,13 +146,17 @@ export default function GymApp() {
   // --- Logic Handlers ---
 
   const prepareNewWorkout = (template: DayTemplate) => {
+    const userId = requireUserId(session);
+    if (!userId) return alert("Your session has expired. Please log in again.");
+
     const newSession: WorkoutSession = {
       id: Date.now().toString(),
       cycleId: selectedCycleId!,
       date: new Date().toISOString().split('T')[0], // format: YYYY-MM-DD
       dayLabel: template.label || `Day ${template.dayNumber}`,
       dayNumber: template.dayNumber,
-      data: template.exercises.map(name => ({ name, weight: "" }))
+      data: template.exercises.map(name => ({ name, weight: "" })),
+      userId
     };
     setActiveSession(newSession);
     setPreviousView(resolveWorkoutOrigin(view));
@@ -163,9 +189,12 @@ export default function GymApp() {
 
   const saveWorkout = async () => {
     if (!activeSession) return;
-    
+
     // Fallback error guard if not configured
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return alert("Supabase connection not added");
+
+    const userId = requireUserId(session);
+    if (!userId) return alert("Your session has expired. Please log in again.");
 
     const { error } = await supabase.from('workout_sessions').upsert({
        id: activeSession.id,
@@ -173,9 +202,10 @@ export default function GymApp() {
        date: activeSession.date,
        day_label: activeSession.dayLabel,
        day_number: activeSession.dayNumber,
-       data: activeSession.data
+       data: activeSession.data,
+       user_id: userId
     });
-    
+
     if (error) {
        console.error(error);
        return alert("Error saving to database!");
@@ -197,11 +227,15 @@ export default function GymApp() {
   const createOrUpdateCycle = async (newCycle: TrainingCycle) => {
     if (!process.env.NEXT_PUBLIC_SUPABASE_URL) return alert("Supabase connection not added");
 
+    const userId = requireUserId(session);
+    if (!userId) return alert("Your session has expired. Please log in again.");
+
     const { error } = await supabase.from('cycles').upsert({
       id: newCycle.id,
       name: newCycle.name,
       is_active: newCycle.isActive,
-      templates: newCycle.templates
+      templates: newCycle.templates,
+      user_id: userId
     });
 
     if (error) {
@@ -218,13 +252,16 @@ export default function GymApp() {
     } else {
        setCycles([...cycles.map(c => ({...c, isActive: false})), newCycle]);
        setView('home');
-       await supabase.from('cycles').update({ is_active: false }).neq('id', newCycle.id);
+       await supabase.from('cycles').update({ is_active: false }).eq('user_id', userId).neq('id', newCycle.id);
     }
   };
 
   const deleteCycle = async (id: string) => {
+    const userId = requireUserId(session);
+    if (!userId) return alert("Your session has expired. Please log in again.");
+
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      await supabase.from('cycles').delete().eq('id', id);
+      await supabase.from('cycles').delete().eq('id', id).eq('user_id', userId);
     }
     setCycles(cycles.filter(c => c.id !== id));
     setHistory(history.filter(h => h.cycleId !== id)); // clean up history
@@ -235,8 +272,11 @@ export default function GymApp() {
   };
 
   const deleteWorkoutSession = async (sessionId: string) => {
+    const userId = requireUserId(session);
+    if (!userId) return alert("Your session has expired. Please log in again.");
+
     if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
-      await supabase.from('workout_sessions').delete().eq('id', sessionId);
+      await supabase.from('workout_sessions').delete().eq('id', sessionId).eq('user_id', userId);
     }
     setHistory(history.filter(h => h.id !== sessionId));
   };
@@ -284,10 +324,11 @@ export default function GymApp() {
 
   if (view === 'edit_cycle' && selectedCycle) {
     return (
-      <CycleFormView 
+      <CycleFormView
         initialCycle={selectedCycle}
-        onBack={() => setView('cycle')} 
-        onSaveCycle={createOrUpdateCycle} 
+        userId={session.user.id}
+        onBack={() => setView('cycle')}
+        onSaveCycle={createOrUpdateCycle}
       />
     );
   }
@@ -317,9 +358,10 @@ export default function GymApp() {
 
   if (view === 'new_cycle') {
     return (
-      <CycleFormView 
-        onBack={() => setView('home')} 
-        onSaveCycle={createOrUpdateCycle} 
+      <CycleFormView
+        userId={session.user.id}
+        onBack={() => setView('home')}
+        onSaveCycle={createOrUpdateCycle}
       />
     );
   }

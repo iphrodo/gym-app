@@ -3,7 +3,7 @@ import { buildCalendarMonth } from './calendarMonth';
 import { WorkoutSession } from '../types';
 
 function session(id: string, date: string): WorkoutSession {
-  return { id, cycleId: 'c1', date, dayLabel: 'Day', dayNumber: 1, data: [] };
+  return { id, cycleId: 'c1', date, dayLabel: 'Day', dayNumber: 1, data: [], userId: 'u1' };
 }
 
 function flatten(weeks: ReturnType<typeof buildCalendarMonth>['weeks']) {

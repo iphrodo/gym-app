@@ -3,7 +3,7 @@ import { sortHistoryNewestFirst } from './sortWorkoutHistory';
 import { WorkoutSession } from '../types';
 
 function session(id: string, date: string): WorkoutSession {
-  return { id, cycleId: 'c1', date, dayLabel: 'Day', dayNumber: 1, data: [] };
+  return { id, cycleId: 'c1', date, dayLabel: 'Day', dayNumber: 1, data: [], userId: 'u1' };
 }
 
 describe('sortHistoryNewestFirst', () => {
