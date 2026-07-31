@@ -13,7 +13,7 @@ interface WorkoutViewProps {
   onCancel: () => void;
   onSave: () => void;
   onUpdateDate: (date: string) => void;
-  onUpdateExercise: (name: string, field: 'weight' | 'reps' | 'comment', value: string) => void;
+  onUpdateExercise: (index: number, field: 'weight' | 'reps' | 'comment', value: string) => void;
 }
 
 export default function WorkoutView({
@@ -23,20 +23,20 @@ export default function WorkoutView({
   onUpdateDate,
   onUpdateExercise
 }: WorkoutViewProps) {
-  const [invalidWeightDrafts, setInvalidWeightDrafts] = useState<Record<string, string>>({});
+  const [invalidWeightDrafts, setInvalidWeightDrafts] = useState<Record<number, string>>({});
 
-  const handleWeightChange = (exerciseName: string, rawValue: string) => {
+  const handleWeightChange = (index: number, rawValue: string) => {
     const val = rawValue.replace(',', '.');
     if (val.trim() === '' || parseWeight(val) !== null) {
       setInvalidWeightDrafts(prev => {
-        if (!(exerciseName in prev)) return prev;
+        if (!(index in prev)) return prev;
         const rest = { ...prev };
-        delete rest[exerciseName];
+        delete rest[index];
         return rest;
       });
-      onUpdateExercise(exerciseName, 'weight', val);
+      onUpdateExercise(index, 'weight', val);
     } else {
-      setInvalidWeightDrafts(prev => ({ ...prev, [exerciseName]: val }));
+      setInvalidWeightDrafts(prev => ({ ...prev, [index]: val }));
     }
   };
 
@@ -73,12 +73,12 @@ export default function WorkoutView({
                 <input
                   type="text"
                   inputMode="decimal"
-                  value={invalidWeightDrafts[exercise.name] ?? exercise.weight}
-                  onChange={(e) => handleWeightChange(exercise.name, e.target.value)}
+                  value={invalidWeightDrafts[index] ?? exercise.weight}
+                  onChange={(e) => handleWeightChange(index, e.target.value)}
                   placeholder="0.0"
                   aria-label={`${exercise.name} weight`}
-                  aria-invalid={exercise.name in invalidWeightDrafts}
-                  className={`${fieldInputClassName(exercise.name in invalidWeightDrafts)} text-xl`}
+                  aria-invalid={index in invalidWeightDrafts}
+                  className={`${fieldInputClassName(index in invalidWeightDrafts)} text-xl`}
                 />
                 <span className="absolute right-6 top-1/2 -translate-y-1/2 text-card-muted-fg font-bold">kg</span>
               </div>
@@ -87,7 +87,7 @@ export default function WorkoutView({
                   type="text"
                   inputMode="decimal"
                   value={exercise.reps}
-                  onChange={(e) => onUpdateExercise(exercise.name, 'reps', e.target.value)}
+                  onChange={(e) => onUpdateExercise(index, 'reps', e.target.value)}
                   placeholder="Num of reps"
                   aria-label={`${exercise.name} reps`}
                   className={`${fieldInputClassName()} text-xl`}
@@ -97,7 +97,7 @@ export default function WorkoutView({
             <div className="flex mt-4">
               <textarea
                 value={exercise.comment}
-                onChange={(e) => onUpdateExercise(exercise.name, 'comment', e.target.value)}
+                onChange={(e) => onUpdateExercise(index, 'comment', e.target.value)}
                 placeholder="Comment"
                 aria-label={`${exercise.name} comment`}
                 className={`${fieldInputClassName()} text-xl`}

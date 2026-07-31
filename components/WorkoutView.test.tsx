@@ -100,13 +100,39 @@ describe('WorkoutView', () => {
     );
 
     fireEvent.change(screen.getByPlaceholderText('0.0'), { target: { value: '5' } });
-    expect(onUpdateExercise).toHaveBeenCalledWith('Bench press', 'weight', '5');
+    expect(onUpdateExercise).toHaveBeenCalledWith(0, 'weight', '5');
 
     fireEvent.change(screen.getByPlaceholderText('Num of reps'), { target: { value: '8' } });
-    expect(onUpdateExercise).toHaveBeenCalledWith('Bench press', 'reps', '8');
+    expect(onUpdateExercise).toHaveBeenCalledWith(0, 'reps', '8');
 
     fireEvent.change(screen.getByPlaceholderText('Comment'), { target: { value: 'felt good' } });
-    expect(onUpdateExercise).toHaveBeenCalledWith('Bench press', 'comment', 'felt good');
+    expect(onUpdateExercise).toHaveBeenCalledWith(0, 'comment', 'felt good');
+  });
+
+  it('edits each exercise independently even when two exercises share a name', () => {
+    const onUpdateExercise = vi.fn();
+    const session = buildSession({
+      data: [
+        { name: 'Bench press', weight: '40', reps: '', comment: '' },
+        { name: 'Bench press', weight: '20', reps: '', comment: '' },
+      ],
+    });
+
+    render(
+      <WorkoutView
+        activeSession={session}
+        onCancel={noop}
+        onSave={noop}
+        onUpdateDate={noop}
+        onUpdateExercise={onUpdateExercise}
+      />
+    );
+
+    const weightInputs = screen.getAllByLabelText('Bench press weight');
+    fireEvent.change(weightInputs[0], { target: { value: '45' } });
+
+    expect(onUpdateExercise).toHaveBeenCalledWith(0, 'weight', '45');
+    expect(onUpdateExercise).not.toHaveBeenCalledWith(1, 'weight', '45');
   });
 
   it('normalises a comma decimal in the weight field to a dot', () => {
@@ -127,7 +153,7 @@ describe('WorkoutView', () => {
 
     fireEvent.change(screen.getByPlaceholderText('0.0'), { target: { value: '82,5' } });
 
-    expect(onUpdateExercise).toHaveBeenCalledWith('Bench press', 'weight', '82.5');
+    expect(onUpdateExercise).toHaveBeenCalledWith(0, 'weight', '82.5');
   });
 
   it('logs no controlled/uncontrolled input warning for a brand-new session', () => {
@@ -168,6 +194,6 @@ describe('WorkoutView', () => {
 
     fireEvent.change(screen.getByPlaceholderText('Comment'), { target: { value: 'line one\nline two' } });
 
-    expect(onUpdateExercise).toHaveBeenCalledWith('Bench press', 'comment', 'line one\nline two');
+    expect(onUpdateExercise).toHaveBeenCalledWith(0, 'comment', 'line one\nline two');
   });
 });
