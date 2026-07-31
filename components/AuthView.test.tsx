@@ -57,9 +57,8 @@ describe('AuthView', () => {
     expect(refresh).toHaveBeenCalled();
   });
 
-  it('submits the entered credentials on sign-up', async () => {
+  it('submits the entered credentials on sign-up and shows an in-app success message', async () => {
     signUp.mockResolvedValue({ error: null });
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
 
     render(<AuthView />);
 
@@ -71,7 +70,7 @@ describe('AuthView', () => {
     await waitFor(() => {
       expect(signUp).toHaveBeenCalledWith({ email: 'new@example.com', password: 'secret1' });
     });
-    alertSpy.mockRestore();
+    expect(await screen.findByText('Success! You are now logged in.')).toBeInTheDocument();
   });
 
   it('preserves the entered email when toggling between login and sign-up', () => {
@@ -86,9 +85,8 @@ describe('AuthView', () => {
     expect(screen.getByPlaceholderText('athlete@example.com')).toHaveValue('keep-me@example.com');
   });
 
-  it('surfaces the error and stays on the form when login is rejected', async () => {
+  it('surfaces the error within the form and stays on the form when login is rejected, preserving the entered email', async () => {
     signInWithPassword.mockResolvedValue({ error: { message: 'Invalid credentials' } });
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
 
     render(<AuthView />);
 
@@ -96,12 +94,8 @@ describe('AuthView', () => {
     fireEvent.change(screen.getByPlaceholderText('••••••••'), { target: { value: 'wrong-pass' } });
     fireEvent.click(screen.getByRole('button', { name: 'Log in' }));
 
-    await waitFor(() => {
-      expect(alertSpy).toHaveBeenCalledWith('Login error: Invalid credentials');
-    });
-    expect(screen.getByPlaceholderText('athlete@example.com')).toBeInTheDocument();
+    expect(await screen.findByText('Invalid credentials')).toBeInTheDocument();
+    expect(screen.getByPlaceholderText('athlete@example.com')).toHaveValue('me@example.com');
     expect(screen.getByRole('button', { name: 'Log in' })).toBeInTheDocument();
-
-    alertSpy.mockRestore();
   });
 });

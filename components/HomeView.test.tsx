@@ -93,23 +93,24 @@ describe('HomeView', () => {
     expect(screen.getByLabelText('Edit workout')).toHaveAttribute('href', '/workouts/session-1');
   });
 
-  it('prompts for confirmation before deleting a cycle', () => {
-    const confirmSpy = vi.spyOn(window, 'confirm').mockReturnValue(false);
+  it('prompts for in-app confirmation before deleting a cycle', () => {
     const onDeleteCycle = vi.fn();
-    const cycles = [buildCycle({ id: 'c1' })];
+    const cycles = [buildCycle({ id: 'c1', name: 'Winter Power Cycle' })];
 
     render(<HomeView cycles={cycles} history={[]} onDeleteCycle={onDeleteCycle} />);
 
     fireEvent.click(screen.getByLabelText('Delete cycle'));
 
-    expect(confirmSpy).toHaveBeenCalled();
+    expect(screen.getByText(/Winter Power Cycle.*workout history will be permanently removed/)).toBeInTheDocument();
     expect(onDeleteCycle).not.toHaveBeenCalled();
 
-    confirmSpy.mockReturnValue(true);
-    fireEvent.click(screen.getByLabelText('Delete cycle'));
-    expect(onDeleteCycle).toHaveBeenCalledWith('c1');
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(onDeleteCycle).not.toHaveBeenCalled();
+    expect(screen.queryByText(/workout history will be permanently removed/)).not.toBeInTheDocument();
 
-    confirmSpy.mockRestore();
+    fireEvent.click(screen.getByLabelText('Delete cycle'));
+    fireEvent.click(screen.getByRole('button', { name: 'Delete' }));
+    expect(onDeleteCycle).toHaveBeenCalledWith('c1');
   });
 
   it('signs out and navigates to the sign-in screen when logging out', async () => {

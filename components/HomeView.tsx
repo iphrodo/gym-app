@@ -1,10 +1,15 @@
 "use client";
 
-import React from 'react';
+import React, { useState } from 'react';
 import Link from 'next/link';
 import { TrainingCycle, WorkoutSession } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { sortHistoryNewestFirst } from '../lib/sortWorkoutHistory';
+import { Screen } from './ui/Screen';
+import Card from './ui/Card';
+import IconButton from './ui/IconButton';
+import ConfirmDialog from './ui/ConfirmDialog';
+import { CalendarIcon, EditIcon, TrashIcon } from './ui/icons';
 
 interface HomeViewProps {
   cycles: TrainingCycle[];
@@ -14,6 +19,8 @@ interface HomeViewProps {
 
 export default function HomeView({ cycles, history, onDeleteCycle }: HomeViewProps) {
   const recentHistory = sortHistoryNewestFirst(history).slice(0, 3);
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+  const pendingDeleteCycle = cycles.find(c => c.id === pendingDeleteId) ?? null;
 
   const handleLogOut = async () => {
     await supabase.auth.signOut();
@@ -23,124 +30,110 @@ export default function HomeView({ cycles, history, onDeleteCycle }: HomeViewPro
   };
 
   return (
-    <main className="min-h-screen bg-zinc-50 p-6 font-sans">
-      <div className="max-w-md mx-auto">
-        <header className="mb-8 flex justify-between items-start">
-          <div>
-            <h1 className="text-4xl font-black text-zinc-900 tracking-tight">GymFlow</h1>
-            <p className="text-zinc-500 font-medium tracking-tight">Your workout journal</p>
-          </div>
-          <div className="flex items-center gap-2">
-            <Link
-              href="/calendar"
-              aria-label="Open calendar"
-              title="Open calendar"
-              className="text-zinc-500 bg-white border border-zinc-200 p-2.5 rounded-xl hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"></rect><path d="M16 2v4"></path><path d="M8 2v4"></path><path d="M3 10h18"></path></svg>
-            </Link>
-            <button
-              onClick={handleLogOut}
-              className="text-[10px] font-black uppercase tracking-wider text-zinc-500 bg-white border border-zinc-200 px-3 py-1.5 rounded-xl hover:text-zinc-900 hover:bg-zinc-50 transition-colors"
-            >
-              Log out
-            </button>
-          </div>
-        </header>
-
-        {recentHistory.length > 0 && (
-          <div className="mb-10">
-            <h3 className="font-bold text-zinc-800 mb-4 px-2">Recent workouts</h3>
-            <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
-              {recentHistory.map(session => (
-                <div key={session.id} className="min-w-[85%] snap-center bg-zinc-900 text-white p-6 rounded-[2.5rem] shadow-xl shadow-zinc-900/20">
-                  <div className="flex justify-between items-center mb-4 border-b border-white/10 pb-4">
-                    <h4 className="font-black text-lg leading-tight w-1/2">{session.dayLabel}</h4>
-                    <span className="text-[10px] font-black text-zinc-400 bg-white/10 px-3 py-1.5 rounded-full uppercase tracking-wider">{session.date}</span>
-                    <Link
-                      href={`/workouts/${session.id}`}
-                      className="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 p-2 rounded-full transition-colors"
-                      aria-label="Edit workout"
-                      title="Edit workout"
-                    >
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"></path><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"></path></svg>
-                    </Link>
-                  </div>
-                  <div className="space-y-3">
-                    {session.data.filter(d => d.weight).length > 0
-                      ? session.data.filter(d => d.weight).map((ex, i) => (
-                        <div key={i} className="flex justify-between items-center text-sm border-b border-white/5 pb-2 last:border-0 last:pb-0">
-                          <span className="text-zinc-400 truncate pr-4 text-xs font-bold leading-tight">{ex.name}</span>
-                          <span className="font-black text-white whitespace-nowrap bg-white/10 px-2 py-1 rounded-lg">{ex.weight} kg</span>
-                        </div>
-                      ))
-                      : <div className="text-zinc-500 text-xs font-bold">No recorded exercises</div>
-                    }
-                  </div>
-                </div>
-              ))}
-            </div>
-
-            {/* Minimal inline CSS to hide scrollbar while keeping functionality */}
-            <style jsx>{`
-              .hide-scrollbar::-webkit-scrollbar {
-                display: none;
-              }
-              .hide-scrollbar {
-                -ms-overflow-style: none;  /* IE and Edge */
-                scrollbar-width: none;  /* Firefox */
-              }
-            `}</style>
-          </div>
-        )}
-
-        <h3 className="font-bold text-zinc-800 mb-4 px-2 mt-4">All cycles</h3>
-        <div className="grid gap-4">
-          {cycles.map((cycle) => (
-            <div
-              key={cycle.id}
-              className="flex flex-col bg-white p-6 rounded-[2.5rem] shadow-xl shadow-zinc-200/50 border border-zinc-100 hover:border-zinc-300 transition-all w-full"
-            >
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-3">
-                  <h2 className="text-xl font-bold text-zinc-800">{cycle.name}</h2>
-                  {cycle.isActive && <span className="px-3 py-1 bg-green-100 text-green-700 text-[10px] font-black rounded-full uppercase">Active</span>}
-                </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    if (window.confirm("Are you sure you want to delete this cycle and all its workout history?")) {
-                      onDeleteCycle(cycle.id);
-                    }
-                  }}
-                  className="text-red-400 hover:text-red-600 hover:bg-red-50 p-2 rounded-full transition-colors"
-                  aria-label="Delete cycle"
-                  title="Delete cycle"
-                >
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
-                </button>
-              </div>
-
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-zinc-500 font-medium">{cycle.templates.length} workout days</p>
-                <Link
-                  href={`/cycles/${cycle.id}`}
-                  className="px-4 py-2 bg-zinc-100 hover:bg-zinc-200 text-zinc-900 rounded-2xl text-sm font-bold transition-colors"
-                >
-                  Open
-                </Link>
-              </div>
-            </div>
-          ))}
+    <Screen>
+      <header className="mb-8 flex justify-between items-start">
+        <div>
+          <h1 className="text-4xl font-black tracking-tight">GymFlow</h1>
+          <p className="text-card-muted-fg font-medium tracking-tight">Your workout journal</p>
         </div>
+        <div className="flex items-center gap-2">
+          <IconButton href="/calendar" label="Open calendar" icon={<CalendarIcon />} className="surface-card border" />
+          <button
+            onClick={handleLogOut}
+            className="text-[10px] font-black uppercase tracking-wider text-card-muted-fg surface-card border px-3 py-1.5 rounded-xl hover:text-page-fg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          >
+            Log out
+          </button>
+        </div>
+      </header>
 
-        <Link
-          href="/cycles/new"
-          className="block text-center w-full mt-6 py-5 border-2 border-dashed border-zinc-300 rounded-[2rem] text-zinc-400 font-bold hover:bg-zinc-100 hover:text-zinc-600 transition-all text-lg"
-        >
-          + New cycle
-        </Link>
+      {recentHistory.length > 0 && (
+        <div className="mb-10">
+          <h3 className="font-bold mb-4 px-2">Recent workouts</h3>
+          <div className="flex overflow-x-auto gap-4 pb-4 snap-x hide-scrollbar">
+            {recentHistory.map(session => (
+              <Card key={session.id} variant="inverted" className="min-w-[85%] snap-center shadow-card-inverted-bg/20">
+                <div className="flex justify-between items-center mb-4 border-b border-card-inverted-border pb-4">
+                  <h4 className="font-black text-lg leading-tight w-1/2">{session.dayLabel}</h4>
+                  <span className="text-[10px] font-black text-card-inverted-muted-fg bg-card-inverted-fg/10 px-3 py-1.5 rounded-full uppercase tracking-wider">{session.date}</span>
+                  <IconButton
+                    href={`/workouts/${session.id}`}
+                    label="Edit workout"
+                    icon={<EditIcon />}
+                    className="text-card-inverted-muted-fg hover:text-card-inverted-fg hover:bg-card-inverted-fg/10"
+                  />
+                </div>
+                <div className="space-y-3">
+                  {session.data.filter(d => d.weight).length > 0
+                    ? session.data.filter(d => d.weight).map((ex, i) => (
+                      <div key={i} className="flex justify-between items-center text-sm border-b border-card-inverted-fg/5 pb-2 last:border-0 last:pb-0">
+                        <span className="text-card-inverted-muted-fg truncate pr-4 text-xs font-bold leading-tight">{ex.name}</span>
+                        <span className="font-black whitespace-nowrap bg-card-inverted-fg/10 px-2 py-1 rounded-lg">{ex.weight} kg</span>
+                      </div>
+                    ))
+                    : <div className="text-card-inverted-muted-fg text-xs font-bold">No recorded exercises</div>
+                  }
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      )}
+
+      <h3 className="font-bold mb-4 px-2 mt-4">All cycles</h3>
+      <div className="grid gap-4">
+        {cycles.map((cycle) => (
+          <Card key={cycle.id} className="flex flex-col hover:border-card-muted-fg transition-all w-full">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-3">
+                <h2 className="text-xl font-bold">{cycle.name}</h2>
+                {cycle.isActive && <span className="px-3 py-1 bg-success-muted-bg text-success-muted-fg text-[10px] font-black rounded-full uppercase">Active</span>}
+              </div>
+              <IconButton
+                variant="danger"
+                label="Delete cycle"
+                icon={<TrashIcon />}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPendingDeleteId(cycle.id);
+                }}
+              />
+            </div>
+
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-card-muted-fg font-medium">{cycle.templates.length} workout days</p>
+              <Link
+                href={`/cycles/${cycle.id}`}
+                className="px-4 py-2 surface-muted hover:opacity-80 rounded-2xl text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+              >
+                Open
+              </Link>
+            </div>
+          </Card>
+        ))}
       </div>
-    </main>
+
+      <Link
+        href="/cycles/new"
+        className="block text-center w-full mt-6 py-5 border-2 border-dashed border-card-border rounded-[2rem] text-card-muted-fg font-bold hover:bg-muted-bg transition-all text-lg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+      >
+        + New cycle
+      </Link>
+
+      <ConfirmDialog
+        open={pendingDeleteId !== null}
+        title="Delete this cycle?"
+        description={
+          pendingDeleteCycle
+            ? `"${pendingDeleteCycle.name}" and all of its workout history will be permanently removed.`
+            : undefined
+        }
+        onConfirm={() => {
+          if (pendingDeleteId) onDeleteCycle(pendingDeleteId);
+          setPendingDeleteId(null);
+        }}
+        onCancel={() => setPendingDeleteId(null)}
+      />
+    </Screen>
   );
 }

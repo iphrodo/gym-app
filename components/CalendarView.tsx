@@ -1,10 +1,14 @@
 "use client";
 
-import React, { useLayoutEffect, useMemo, useState } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { WorkoutSession } from '../types';
 import { buildCalendarMonth, todayDateKey } from '../lib/calendarMonth';
+import { Screen, ScreenHeader } from './ui/Screen';
+import Card from './ui/Card';
+import IconButton from './ui/IconButton';
+import { ChevronLeftIcon, ChevronRightIcon } from './ui/icons';
 
 interface CalendarViewProps {
   history: WorkoutSession[];
@@ -63,104 +67,88 @@ export default function CalendarView({ history }: CalendarViewProps) {
     : [];
 
   return (
-    <main className="min-h-screen bg-zinc-50 p-6 font-sans">
-      <div className="max-w-md mx-auto">
-        <header className="flex items-center justify-between mb-8">
-          <Link href="/" className="text-zinc-400 font-bold hover:text-zinc-900">
+    <Screen>
+      <ScreenHeader
+        left={
+          <Link href="/" className="text-card-muted-fg font-bold hover:text-page-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded">
             ← Back
           </Link>
-          <h2 className="font-black text-zinc-900">Calendar</h2>
-          <div className="w-16"></div>
-        </header>
+        }
+        title="Calendar"
+      />
 
-        <div className="bg-white p-6 rounded-[2.5rem] shadow-sm border border-zinc-100">
-          <div className="flex items-center justify-between mb-6">
-            <button
-              onClick={goToPreviousMonth}
-              className="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 p-2 rounded-full transition-colors"
-              aria-label="Previous month"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
-            </button>
-            <div className="text-center">
-              <h3 className="font-black text-zinc-900 leading-tight">{calendarMonth.monthLabel}</h3>
-              <p className="text-[10px] uppercase font-black tracking-wider text-zinc-500">
-                {calendarMonth.workoutCount} workout{calendarMonth.workoutCount === 1 ? '' : 's'}
-              </p>
-            </div>
-            <button
-              onClick={goToNextMonth}
-              className="text-zinc-400 hover:text-zinc-900 hover:bg-zinc-100 p-2 rounded-full transition-colors"
-              aria-label="Next month"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
-            </button>
+      <Card>
+        <div className="flex items-center justify-between mb-6">
+          <IconButton onClick={goToPreviousMonth} label="Previous month" icon={<ChevronLeftIcon />} />
+          <div className="text-center">
+            <h3 className="font-black leading-tight">{calendarMonth.monthLabel}</h3>
+            <p className="text-[10px] uppercase font-black tracking-wider text-card-muted-fg">
+              {calendarMonth.workoutCount} workout{calendarMonth.workoutCount === 1 ? '' : 's'}
+            </p>
           </div>
-
-          <div className="grid grid-cols-7 gap-1 mb-2">
-            {WEEKDAY_LABELS.map(label => (
-              <div key={label} className="text-center text-[10px] font-black uppercase text-zinc-400 tracking-wider">
-                {label}
-              </div>
-            ))}
-          </div>
-
-          <div className="grid grid-cols-7 gap-1">
-            {calendarMonth.weeks.flat().map(dayCell => {
-              const hasWorkout = dayCell.sessions.length > 0;
-              return (
-                <button
-                  key={dayCell.date}
-                  onClick={() => handleDayClick(dayCell.date, dayCell.sessions)}
-                  disabled={!hasWorkout}
-                  className={[
-                    'aspect-square rounded-2xl flex items-center justify-center text-sm font-bold transition-colors',
-                    hasWorkout
-                      ? 'bg-zinc-900 text-white hover:bg-zinc-700 cursor-pointer'
-                      : `cursor-default ${!dayCell.inMonth ? 'text-zinc-300' : 'text-zinc-700'}`,
-                    dayCell.isToday && !hasWorkout ? 'ring-2 ring-zinc-900' : '',
-                    dayCell.isToday && hasWorkout ? 'ring-2 ring-offset-2 ring-zinc-900' : '',
-                  ].join(' ')}
-                >
-                  {dayCell.day}
-                </button>
-              );
-            })}
-          </div>
+          <IconButton onClick={goToNextMonth} label="Next month" icon={<ChevronRightIcon />} />
         </div>
-      </div>
+
+        <div className="grid grid-cols-7 gap-1 mb-2">
+          {WEEKDAY_LABELS.map(label => (
+            <div key={label} className="text-center text-[10px] font-black uppercase text-card-muted-fg tracking-wider">
+              {label}
+            </div>
+          ))}
+        </div>
+
+        <div className="grid grid-cols-7 gap-1">
+          {calendarMonth.weeks.flat().map(dayCell => {
+            const hasWorkout = dayCell.sessions.length > 0;
+            return (
+              <button
+                key={dayCell.date}
+                onClick={() => handleDayClick(dayCell.date, dayCell.sessions)}
+                disabled={!hasWorkout}
+                className={[
+                  'aspect-square rounded-2xl flex items-center justify-center text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring',
+                  hasWorkout
+                    ? 'surface-card-inverted hover:opacity-80 cursor-pointer'
+                    : `cursor-default ${!dayCell.inMonth ? 'text-card-border' : 'text-card-muted-fg'}`,
+                  dayCell.isToday && !hasWorkout ? 'ring-2 ring-focus-ring' : '',
+                  dayCell.isToday && hasWorkout ? 'ring-2 ring-offset-2 ring-focus-ring' : '',
+                ].join(' ')}
+              >
+                {dayCell.day}
+              </button>
+            );
+          })}
+        </div>
+      </Card>
 
       {pendingDateKey && (
         <div
           className="fixed inset-0 bg-black/40 flex items-center justify-center p-6 z-50"
           onClick={() => setPendingDateKey(null)}
         >
-          <div
-            className="bg-white rounded-[2rem] p-6 w-full max-w-sm shadow-xl"
-            onClick={e => e.stopPropagation()}
-          >
-            <h4 className="font-black text-zinc-900 mb-4">{pendingDateKey}</h4>
+          <Card rounded="md" className="w-full max-w-sm" onClick={e => e.stopPropagation()}>
+            <h4 className="font-black mb-4">{pendingDateKey}</h4>
             <div className="space-y-2">
               {pendingSessions.map(session => (
                 <Link
                   key={session.id}
                   href={`/workouts/${session.id}`}
-                  className="w-full flex items-center justify-between bg-zinc-50 hover:bg-zinc-100 px-4 py-3 rounded-2xl text-left transition-colors"
+                  className="w-full flex items-center justify-between surface-muted hover:opacity-80 px-4 py-3 rounded-2xl text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
                 >
-                  <span className="font-bold text-zinc-800 text-sm">{session.dayLabel}</span>
-                  <span className="text-zinc-400 text-xs">→</span>
+                  <span className="font-bold text-sm">{session.dayLabel}</span>
+                  <span className="text-muted-muted-fg text-xs">→</span>
                 </Link>
               ))}
             </div>
             <button
               onClick={() => setPendingDateKey(null)}
-              className="w-full mt-4 py-2.5 text-zinc-400 font-bold text-sm hover:text-zinc-900"
+              className="w-full mt-4 py-2.5 text-card-muted-fg font-bold text-sm hover:text-card-fg focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring rounded"
             >
               Cancel
             </button>
-          </div>
+          </Card>
         </div>
       )}
-    </main>
+    </Screen>
   );
 }

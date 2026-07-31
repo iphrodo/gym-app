@@ -64,16 +64,15 @@ describe('CycleFormView', () => {
     expect(screen.getAllByPlaceholderText(/^Exercise \d/)).toHaveLength(1);
   });
 
-  it('refuses to save without a cycle name', () => {
-    const alertSpy = vi.spyOn(window, 'alert').mockImplementation(() => {});
+  it('refuses to save without a cycle name, showing an in-app message and focusing the field', () => {
     const onSaveCycle = vi.fn();
     render(<CycleFormView backHref="/" onSaveCycle={onSaveCycle} />);
 
     fireEvent.click(screen.getByText('Create cycle'));
 
-    expect(alertSpy).toHaveBeenCalledWith('Enter cycle name');
+    expect(screen.getByText('Enter a cycle name')).toBeInTheDocument();
+    expect(screen.getByLabelText('Cycle name')).toHaveFocus();
     expect(onSaveCycle).not.toHaveBeenCalled();
-    alertSpy.mockRestore();
   });
 
   it('strips blank exercise rows on save', () => {

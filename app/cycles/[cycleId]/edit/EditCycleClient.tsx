@@ -4,6 +4,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../lib/supabaseClient';
 import { upsertCycle } from '../../../../lib/data/cycles';
 import CycleFormView from '../../../../components/CycleFormView';
+import { useMessages } from '../../../../components/ui/MessageProvider';
 import { TrainingCycle } from '../../../../types';
 
 interface EditCycleClientProps {
@@ -12,12 +13,13 @@ interface EditCycleClientProps {
 
 export default function EditCycleClient({ cycle }: EditCycleClientProps) {
   const router = useRouter();
+  const { showMessage } = useMessages();
 
   const handleSaveCycle = async (updated: TrainingCycle) => {
     const result = await upsertCycle(supabase, updated);
     if (!result.ok) {
       console.error(result.error);
-      alert("Error saving cycle to database!");
+      showMessage('error', 'Error saving cycle to database!');
       return;
     }
 
