@@ -3,6 +3,8 @@ import { render, screen, cleanup, fireEvent } from '@testing-library/react';
 import CalendarView from './CalendarView';
 import { WorkoutSession } from '../types';
 
+const push = vi.fn();
+
 vi.mock('../lib/calendarMonth', async () => {
   const actual = await vi.importActual<typeof import('../lib/calendarMonth')>('../lib/calendarMonth');
   return {
@@ -11,8 +13,13 @@ vi.mock('../lib/calendarMonth', async () => {
   };
 });
 
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push }),
+}));
+
 afterEach(() => {
   cleanup();
+  vi.clearAllMocks();
 });
 
 function buildSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
@@ -28,12 +35,10 @@ function buildSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
   };
 }
 
-function noop() {}
-
 describe('CalendarView', () => {
   it('makes days with workouts actionable and leaves days without workouts inert', () => {
     const history = [buildSession({ date: '2026-01-10' })];
-    render(<CalendarView history={history} onEditSession={noop} onBack={noop} />);
+    render(<CalendarView history={history} />);
 
     const dayWithWorkout = screen.getByRole('button', { name: '10' });
     const dayWithoutWorkout = screen.getByRole('button', { name: '5' });
@@ -43,7 +48,7 @@ describe('CalendarView', () => {
   });
 
   it('moves across the year boundary when navigating to the previous month', () => {
-    render(<CalendarView history={[]} onEditSession={noop} onBack={noop} />);
+    render(<CalendarView history={[]} />);
 
     expect(screen.getByText('January 2026')).toBeInTheDocument();
     fireEvent.click(screen.getByLabelText('Previous month'));
@@ -51,22 +56,28 @@ describe('CalendarView', () => {
     expect(screen.getByText('December 2025')).toBeInTheDocument();
   });
 
+  it('navigates directly to the workout when a day has a single session', () => {
+    const history = [buildSession({ date: '2026-01-10' })];
+    render(<CalendarView history={history} />);
+
+    fireEvent.click(screen.getByRole('button', { name: '10' }));
+
+    expect(push).toHaveBeenCalledWith('/workouts/session-1');
+  });
+
   it('opens the picker when clicking a day with several sessions', () => {
     const history = [
       buildSession({ id: 's1', date: '2026-01-10', dayLabel: 'Push day' }),
       buildSession({ id: 's2', date: '2026-01-10', dayLabel: 'Pull day' }),
     ];
-    const onEditSession = vi.fn();
-    render(<CalendarView history={history} onEditSession={onEditSession} onBack={noop} />);
+    render(<CalendarView history={history} />);
 
     fireEvent.click(screen.getByRole('button', { name: '10' }));
 
     expect(screen.getByText('2026-01-10')).toBeInTheDocument();
-    expect(screen.getByText('Push day')).toBeInTheDocument();
-    expect(screen.getByText('Pull day')).toBeInTheDocument();
-    expect(onEditSession).not.toHaveBeenCalled();
+    expect(push).not.toHaveBeenCalled();
 
-    fireEvent.click(screen.getByText('Pull day'));
-    expect(onEditSession).toHaveBeenCalledWith(history[1]);
+    const pullLink = screen.getByText('Pull day').closest('a');
+    expect(pullLink).toHaveAttribute('href', '/workouts/s2');
   });
 });

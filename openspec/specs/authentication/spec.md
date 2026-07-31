@@ -6,19 +6,23 @@ Gate access to the app behind a Supabase-backed account, so workout data is priv
 ## Requirements
 
 ### Requirement: Session Gate
-The app SHALL show the authentication screen for any visitor without an active Supabase session, and SHALL show the app's data views only once a session exists.
+The app SHALL determine on the server whether a request has a valid session, redirecting unauthenticated requests to the authentication screen before any user data is fetched, and rendering data screens only for authenticated requests.
 
 #### Scenario: No session on load
-- **WHEN** the app loads and `supabase.auth.getSession()` resolves with no session
-- **THEN** the auth screen is shown instead of any workout data
+- **WHEN** a visitor without a valid session requests any data screen
+- **THEN** the server redirects them to the authentication screen, and no workout data is fetched or included in the response
 
 #### Scenario: Session established
-- **WHEN** `supabase.auth.onAuthStateChange` reports a session (sign-in or restored session)
-- **THEN** the app fetches cycles and workout history and shows the home dashboard
+- **WHEN** a visitor signs in successfully
+- **THEN** they are taken to the screen they originally requested, or the home dashboard if they requested none, with its data rendered on the server
 
-#### Scenario: Checking session
-- **WHEN** the initial `getSession()` call has not yet resolved
-- **THEN** a loading indicator is shown instead of the auth screen or app data
+#### Scenario: Session stored in cookies
+- **WHEN** a session is created
+- **THEN** it is stored such that both the server and the browser can read it, so a server-rendered screen and a client interaction agree on who is signed in
+
+#### Scenario: Session refresh
+- **WHEN** a request arrives with a session that is valid but near expiry
+- **THEN** the session is refreshed as part of handling that request, without interrupting the user
 
 ### Requirement: Email/Password Sign In
 A returning user SHALL be able to sign in with email and password.
@@ -51,12 +55,16 @@ A logged-in user SHALL be able to end their session from the home dashboard, and
 
 #### Scenario: Log out
 - **WHEN** the user clicks "Log out" on the home dashboard
-- **THEN** `supabase.auth.signOut()` is called and the app returns to the auth screen
+- **THEN** the session is ended, its cookies are cleared, and the user is returned to the authentication screen
 
 #### Scenario: Cached data is discarded
 - **WHEN** the session ends, whether by an explicit log out or by the session being reported as absent
-- **THEN** the cycles, workout history, selected cycle, and any in-progress workout held in memory are cleared
+- **THEN** cached cycles, workout history, and any in-progress workout are cleared, including any state preserved across route navigation
 
 #### Scenario: Switching accounts on a shared device
 - **WHEN** one user logs out and a different account logs in on the same device
-- **THEN** the second user never sees the first user's cycles or workout history, including during the interval before the new account's data has finished loading
+- **THEN** the second user never sees the first user's cycles or workout history, including on screens the first user had visited
+
+#### Scenario: Signed-out user presses back
+- **WHEN** a user signs out and then presses the browser back button to a screen they had visited
+- **THEN** they are redirected to the authentication screen rather than shown the previous account's rendered data

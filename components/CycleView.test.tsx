@@ -40,25 +40,25 @@ function buildSession(overrides: Partial<WorkoutSession> = {}): WorkoutSession {
 function noop() {}
 
 describe('CycleView', () => {
-  it('renders day templates as start actions', () => {
+  it('renders day templates as start links', () => {
     const cycle = buildCycle();
-    render(
-      <CycleView
-        selectedCycle={cycle}
-        cycleHistory={[]}
-        onBack={noop}
-        onStartWorkout={noop}
-        onDeleteSession={noop}
-        onEditCycle={noop}
-        onViewStats={noop}
-        onEditSession={noop}
-      />
-    );
+    render(<CycleView selectedCycle={cycle} cycleHistory={[]} onDeleteSession={noop} />);
 
-    const startButtons = screen.getAllByRole('button', { name: /Start$/ });
-    expect(startButtons).toHaveLength(2);
-    expect(within(startButtons[0]).getByText('Push')).toBeInTheDocument();
-    expect(within(startButtons[1]).getByText('Pull')).toBeInTheDocument();
+    const startLinks = screen.getAllByRole('link', { name: /Start$/ });
+    expect(startLinks).toHaveLength(2);
+    expect(within(startLinks[0]).getByText('Push')).toBeInTheDocument();
+    expect(startLinks[0]).toHaveAttribute('href', '/cycles/cycle-1/workouts/new?day=1');
+    expect(within(startLinks[1]).getByText('Pull')).toBeInTheDocument();
+    expect(startLinks[1]).toHaveAttribute('href', '/cycles/cycle-1/workouts/new?day=2');
+  });
+
+  it('links to stats, edit, and back routes', () => {
+    const cycle = buildCycle();
+    render(<CycleView selectedCycle={cycle} cycleHistory={[]} onDeleteSession={noop} />);
+
+    expect(screen.getByRole('link', { name: '← All' })).toHaveAttribute('href', '/');
+    expect(screen.getByRole('link', { name: /Statistics/ })).toHaveAttribute('href', '/cycles/cycle-1/stats');
+    expect(screen.getByRole('link', { name: 'Edit' })).toHaveAttribute('href', '/cycles/cycle-1/edit');
   });
 
   it('renders history newest-first with correct completion counts', () => {
@@ -71,18 +71,7 @@ describe('CycleView', () => {
       ] }),
     ];
 
-    render(
-      <CycleView
-        selectedCycle={cycle}
-        cycleHistory={history}
-        onBack={noop}
-        onStartWorkout={noop}
-        onDeleteSession={noop}
-        onEditCycle={noop}
-        onViewStats={noop}
-        onEditSession={noop}
-      />
-    );
+    render(<CycleView selectedCycle={cycle} cycleHistory={history} onDeleteSession={noop} />);
 
     const dayLabels = screen.getAllByText(/day$/i).map(el => el.textContent);
     expect(dayLabels).toEqual(['Pull day', 'Push day']);
@@ -90,22 +79,15 @@ describe('CycleView', () => {
     const counts = screen.getAllByText(/Exercises completed:/);
     expect(counts[0]).toHaveTextContent('Exercises completed: 1 / 2');
     expect(counts[1]).toHaveTextContent('Exercises completed: 1 / 1');
+
+    const editLinks = screen.getAllByLabelText('Edit workout');
+    expect(editLinks[0]).toHaveAttribute('href', '/workouts/s-new');
+    expect(editLinks[1]).toHaveAttribute('href', '/workouts/s-old');
   });
 
   it('reads zero elapsed days for a cycle with no sessions', () => {
     const cycle = buildCycle();
-    render(
-      <CycleView
-        selectedCycle={cycle}
-        cycleHistory={[]}
-        onBack={noop}
-        onStartWorkout={noop}
-        onDeleteSession={noop}
-        onEditCycle={noop}
-        onViewStats={noop}
-        onEditSession={noop}
-      />
-    );
+    render(<CycleView selectedCycle={cycle} cycleHistory={[]} onDeleteSession={noop} />);
 
     expect(screen.getByText('Days in cycle').nextElementSibling).toHaveTextContent('0');
   });
