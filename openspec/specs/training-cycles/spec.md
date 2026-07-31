@@ -17,7 +17,7 @@ On first login for an account with no cycles, the app SHALL create and persist a
 - **THEN** the new account is seeded with its own default cycle rather than seeing another account's cycles
 
 ### Requirement: Create Cycle
-A user SHALL be able to create a new training cycle with a name and one or more day templates, each with a label and an ordered list of exercises.
+A user SHALL be able to create a new training cycle with a name and one or more day templates, each with a label and an ordered list of exercises. A day template's exercise names SHALL be unique within that day, compared case-insensitively after trimming whitespace.
 
 #### Scenario: Minimal valid cycle
 - **WHEN** the user enters a cycle name, keeps the default single day, adds at least one exercise, and saves
@@ -30,6 +30,10 @@ A user SHALL be able to create a new training cycle with a name and one or more 
 #### Scenario: Empty exercise rows
 - **WHEN** the user leaves blank exercise input rows in a day template
 - **THEN** blank rows are stripped before saving so only non-empty exercise names persist
+
+#### Scenario: Duplicate exercise name within a day
+- **WHEN** the user attempts to save a cycle where a single day template has two or more exercise rows with the same name (case-insensitive, trimmed)
+- **THEN** a validation message is shown against the duplicated exercise row, the affected field receives focus, and the cycle is not saved
 
 ### Requirement: Edit Cycle
 A user SHALL be able to edit an existing cycle's name and day templates. Edits SHALL be held in the form and applied to the app's data only on save.

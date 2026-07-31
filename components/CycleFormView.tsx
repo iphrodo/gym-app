@@ -21,13 +21,31 @@ export default function CycleFormView({ initialCycle, backHref, onSaveCycle }: C
     initialCycle ? structuredClone(initialCycle.templates) : [{ dayNumber: 1, label: "", exercises: [""] }]
   );
   const [nameError, setNameError] = useState<string | null>(null);
+  const [duplicateExercise, setDuplicateExercise] = useState<{ dayIndex: number; exIndex: number } | null>(null);
   const nameInputRef = useRef<HTMLInputElement>(null);
+  const exerciseInputRefs = useRef<Record<string, HTMLInputElement | null>>({});
 
   const handleSave = () => {
     if (!cycleName) {
       setNameError('Enter a cycle name');
       nameInputRef.current?.focus();
       return;
+    }
+
+    setDuplicateExercise(null);
+    for (let dayIndex = 0; dayIndex < cycleDays.length; dayIndex++) {
+      const seen = new Set<string>();
+      const exercises = cycleDays[dayIndex].exercises;
+      for (let exIndex = 0; exIndex < exercises.length; exIndex++) {
+        const key = exercises[exIndex].trim().toLowerCase();
+        if (key === "") continue;
+        if (seen.has(key)) {
+          setDuplicateExercise({ dayIndex, exIndex });
+          exerciseInputRefs.current[`${dayIndex}-${exIndex}`]?.focus();
+          return;
+        }
+        seen.add(key);
+      }
     }
 
     // Clean up empty lines
@@ -110,33 +128,45 @@ export default function CycleFormView({ initialCycle, backHref, onSaveCycle }: C
             <div>
               <label className="block text-[10px] uppercase font-black text-card-muted-fg mb-2">Exercises</label>
               <div className="space-y-3">
-                {day.exercises.map((ex, exIndex) => (
-                  <div key={exIndex} className="flex gap-2">
-                    <input
-                      type="text"
-                      value={ex}
-                      onChange={(e) => {
-                        const newDays = [...cycleDays];
-                        newDays[dayIndex].exercises[exIndex] = e.target.value;
-                        setCycleDays(newDays);
-                      }}
-                      placeholder={`Exercise ${exIndex + 1}`}
-                      aria-label={`Exercise ${exIndex + 1}`}
-                      className={`flex-1 ${fieldInputClassName()} py-3 px-4 rounded-xl text-sm`}
-                    />
-                    <button
-                      onClick={() => {
-                        const newDays = [...cycleDays];
-                        newDays[dayIndex].exercises.splice(exIndex, 1);
-                        setCycleDays(newDays);
-                      }}
-                      aria-label={`Remove exercise ${exIndex + 1}`}
-                      className="w-11 flex-shrink-0 surface-muted font-bold rounded-xl hover:bg-danger-muted-bg hover:text-danger-muted-fg transition-colors flex items-center justify-center text-xl pb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-                    >
-                      ×
-                    </button>
-                  </div>
-                ))}
+                {day.exercises.map((ex, exIndex) => {
+                  const isDuplicate = duplicateExercise?.dayIndex === dayIndex && duplicateExercise?.exIndex === exIndex;
+                  return (
+                    <div key={exIndex}>
+                      <div className="flex gap-2">
+                        <input
+                          ref={(el) => { exerciseInputRefs.current[`${dayIndex}-${exIndex}`] = el; }}
+                          type="text"
+                          value={ex}
+                          onChange={(e) => {
+                            const newDays = [...cycleDays];
+                            newDays[dayIndex].exercises[exIndex] = e.target.value;
+                            setCycleDays(newDays);
+                            if (isDuplicate) setDuplicateExercise(null);
+                          }}
+                          placeholder={`Exercise ${exIndex + 1}`}
+                          aria-label={`Exercise ${exIndex + 1}`}
+                          aria-invalid={isDuplicate}
+                          className={`flex-1 ${fieldInputClassName(isDuplicate)} py-3 px-4 rounded-xl text-sm`}
+                        />
+                        <button
+                          onClick={() => {
+                            const newDays = [...cycleDays];
+                            newDays[dayIndex].exercises.splice(exIndex, 1);
+                            setCycleDays(newDays);
+                            if (isDuplicate) setDuplicateExercise(null);
+                          }}
+                          aria-label={`Remove exercise ${exIndex + 1}`}
+                          className="w-11 flex-shrink-0 surface-muted font-bold rounded-xl hover:bg-danger-muted-bg hover:text-danger-muted-fg transition-colors flex items-center justify-center text-xl pb-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+                        >
+                          ×
+                        </button>
+                      </div>
+                      {isDuplicate && (
+                        <p role="alert" className="mt-2 text-xs font-bold text-danger">This day already has an exercise with this name</p>
+                      )}
+                    </div>
+                  );
+                })}
                 <button
                   onClick={() => {
                     const newDays = [...cycleDays];

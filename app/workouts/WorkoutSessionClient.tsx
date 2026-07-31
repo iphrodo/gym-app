@@ -21,10 +21,10 @@ export default function WorkoutSessionClient({ initialSession }: WorkoutSessionC
     setActiveSession(prev => ({ ...prev, date }));
   };
 
-  const updateExerciseValues = (exerciseName: string, field: 'weight' | 'reps' | 'comment', value: string) => {
+  const updateExerciseValues = (index: number, field: 'weight' | 'reps' | 'comment', value: string) => {
     setActiveSession(prev => ({
       ...prev,
-      data: prev.data.map(item => (item.name === exerciseName ? { ...item, [field]: value } : item)),
+      data: prev.data.map((item, i) => (i === index ? { ...item, [field]: value } : item)),
     }));
   };
 
