@@ -96,8 +96,16 @@ The app SHALL show, for a selected cycle, its workout count, elapsed days, day t
 - **THEN** the elapsed-days figure reads zero rather than a value derived from an absent record
 
 ### Requirement: Home Dashboard Cycle List
-The home dashboard SHALL list all of the user's training cycles with their active status, day count, and entry points to open, create, or delete a cycle.
+The home dashboard SHALL list all of the user's training cycles with their active status, day count, and entry points to open, create, or delete a cycle. Each cycle's entire card SHALL be clickable to open that cycle, not only its "Open" control.
 
 #### Scenario: Viewing cycles list
 - **WHEN** the user is on the home dashboard
 - **THEN** every cycle is listed with its name, an "Active" badge if `isActive` is true, its number of workout days, and "Open"/delete controls; a "+ New cycle" action is always available
+
+#### Scenario: Opening a cycle from anywhere on its card
+- **WHEN** the user clicks or taps anywhere on a cycle's card other than the delete control
+- **THEN** the app navigates to that cycle's detail view
+
+#### Scenario: Deleting from the card does not open it
+- **WHEN** the user clicks the delete control on a cycle's card
+- **THEN** the deletion confirmation dialog opens and the app does not navigate to the cycle's detail view

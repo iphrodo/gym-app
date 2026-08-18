@@ -17,15 +17,15 @@ interface ScreenHeaderProps {
 
 export function ScreenHeader({ left, title, subtitle, right }: ScreenHeaderProps) {
   return (
-    <header className="grid grid-cols-[1fr_auto_1fr] items-center mb-8 gap-2">
-      <div className="justify-self-start">{left}</div>
-      <div className="text-center">
+    <header className="grid grid-cols-[auto_1fr_auto] items-center mb-8 gap-2">
+      <div className="justify-self-start min-w-0">{left}</div>
+      <div className="text-center min-w-0">
         {title && <h2 className="font-black text-page-fg">{title}</h2>}
         {subtitle && (
           <p className="text-[10px] text-card-muted-fg uppercase font-bold tracking-widest">{subtitle}</p>
         )}
       </div>
-      <div className="justify-self-end flex items-center gap-2">{right}</div>
+      <div className="justify-self-end flex items-center gap-2 flex-wrap">{right}</div>
     </header>
   );
 }

@@ -4,6 +4,7 @@ import HomeView from './HomeView';
 import { TrainingCycle, WorkoutSession } from '../types';
 
 const signOut = vi.fn();
+const push = vi.fn();
 
 vi.mock('../lib/supabaseClient', () => ({
   supabase: {
@@ -13,6 +14,10 @@ vi.mock('../lib/supabaseClient', () => ({
       signOut: (...args: unknown[]) => signOut(...args),
     },
   },
+}));
+
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push }),
 }));
 
 afterEach(() => {
@@ -71,9 +76,26 @@ describe('HomeView', () => {
     const cycles = [buildCycle({ id: 'c1' })];
     render(<HomeView cycles={cycles} history={[]} onDeleteCycle={noop} />);
 
-    expect(screen.getByRole('link', { name: 'Open' })).toHaveAttribute('href', '/cycles/c1');
     expect(screen.getByRole('link', { name: '+ New cycle' })).toHaveAttribute('href', '/cycles/new');
     expect(screen.getByRole('link', { name: 'Open calendar' })).toHaveAttribute('href', '/calendar');
+  });
+
+  it('navigates to the cycle detail route when the card is clicked anywhere', () => {
+    const cycles = [buildCycle({ id: 'c1', name: 'Winter Power Cycle' })];
+    render(<HomeView cycles={cycles} history={[]} onDeleteCycle={noop} />);
+
+    fireEvent.click(screen.getByText('2 workout days'));
+
+    expect(push).toHaveBeenCalledWith('/cycles/c1');
+  });
+
+  it('does not navigate when the delete control is clicked', () => {
+    const cycles = [buildCycle({ id: 'c1', name: 'Winter Power Cycle' })];
+    render(<HomeView cycles={cycles} history={[]} onDeleteCycle={noop} />);
+
+    fireEvent.click(screen.getByLabelText('Delete cycle'));
+
+    expect(push).not.toHaveBeenCalled();
   });
 
   it('shows only exercises with a recorded weight in recent workouts', () => {

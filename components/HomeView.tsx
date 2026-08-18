@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { TrainingCycle, WorkoutSession } from '../types';
 import { supabase } from '../lib/supabaseClient';
 import { sortHistoryNewestFirst } from '../lib/sortWorkoutHistory';
@@ -18,6 +19,7 @@ interface HomeViewProps {
 }
 
 export default function HomeView({ cycles, history, onDeleteCycle }: HomeViewProps) {
+  const router = useRouter();
   const recentHistory = sortHistoryNewestFirst(history).slice(0, 3);
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
   const pendingDeleteCycle = cycles.find(c => c.id === pendingDeleteId) ?? null;
@@ -83,7 +85,19 @@ export default function HomeView({ cycles, history, onDeleteCycle }: HomeViewPro
       <h3 className="font-bold mb-4 px-2 mt-4">All cycles</h3>
       <div className="grid gap-4">
         {cycles.map((cycle) => (
-          <Card key={cycle.id} className="flex flex-col hover:border-card-muted-fg transition-all w-full">
+          <Card
+            key={cycle.id}
+            role="button"
+            tabIndex={0}
+            onClick={() => router.push(`/cycles/${cycle.id}`)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter' || e.key === ' ') {
+                e.preventDefault();
+                router.push(`/cycles/${cycle.id}`);
+              }
+            }}
+            className="flex flex-col hover:border-card-muted-fg transition-all w-full cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
+          >
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <h2 className="text-xl font-bold">{cycle.name}</h2>
@@ -102,12 +116,9 @@ export default function HomeView({ cycles, history, onDeleteCycle }: HomeViewPro
 
             <div className="flex items-center justify-between">
               <p className="text-sm text-card-muted-fg font-medium">{cycle.templates.length} workout days</p>
-              <Link
-                href={`/cycles/${cycle.id}`}
-                className="px-4 py-2 surface-muted hover:opacity-80 rounded-2xl text-sm font-bold transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring"
-              >
+              <span className="px-4 py-2 surface-muted rounded-2xl text-sm font-bold">
                 Open
-              </Link>
+              </span>
             </div>
           </Card>
         ))}
