@@ -36,10 +36,10 @@ export default function CycleView({ selectedCycle, cycleHistory, onDeleteSession
         }
         right={
           <>
-            <Link href={`/cycles/${selectedCycle.id}/stats`} className="text-xs font-black uppercase tracking-wider surface-card border-2 shadow-sm px-4 py-2 rounded-xl hover:border-card-muted-fg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
+            <Link href={`/cycles/${selectedCycle.id}/stats`} className="whitespace-nowrap text-xs font-black uppercase tracking-wider surface-card border-2 shadow-sm px-3 py-2 rounded-xl hover:border-card-muted-fg transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
               📊 Statistics
             </Link>
-            <Link href={`/cycles/${selectedCycle.id}/edit`} className="text-xs font-black uppercase tracking-wider surface-muted px-4 py-2 rounded-xl hover:opacity-80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
+            <Link href={`/cycles/${selectedCycle.id}/edit`} className="whitespace-nowrap text-xs font-black uppercase tracking-wider surface-muted px-3 py-2 rounded-xl hover:opacity-80 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-focus-ring">
               Edit
             </Link>
           </>
